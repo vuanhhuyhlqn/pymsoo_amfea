@@ -30,7 +30,7 @@ The project is in process of update and fix
 - This project was trained and tutorial by [MSO Lab](http://mso.soict.hust.edu.vn/)
 - This project was based on these paper below: 
   - [Multifactorial Evolution: Toward Evolutionary Multitasking](https://ieeexplore.ieee.org/abstract/document/7161358)
-  ...
+  - ...
 
 ## Contact
 - Lê Trung Kiên - kien.letrung610@gmail.com
