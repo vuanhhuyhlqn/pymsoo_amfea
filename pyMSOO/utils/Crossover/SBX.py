@@ -3,7 +3,7 @@ from typing import Tuple
 
 from ..EA import Individual
 from numba import jit
-from . import AbstractCrossover
+from .utils import AbstractCrossover
 
 class SBX_Crossover(AbstractCrossover):
     '''

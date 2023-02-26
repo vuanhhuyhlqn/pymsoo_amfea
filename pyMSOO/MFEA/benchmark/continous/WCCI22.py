@@ -1,11 +1,10 @@
 from . import GECCO20_benchmark_50tasks
-from ...benchmark.continous import Individual_func
+from .utils import Individual_func
 import os
 import numpy as np
 from numba import jit
 
-path = os.path.dirnam(os.path.realpath(__file__))
-
+path = os.path.dirname(os.path.realpath(__file__))
 
 @jit(nopython = True)
 def Ellips_func(x,dim):

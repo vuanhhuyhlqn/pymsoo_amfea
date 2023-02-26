@@ -1,7 +1,3 @@
-#------import other mutation-------
-from .Polynomial import PolynomialMutation
-from .Gauss import GaussMutation
-
 
 # -------Abstract Mutation----------
 from typing import Type, List

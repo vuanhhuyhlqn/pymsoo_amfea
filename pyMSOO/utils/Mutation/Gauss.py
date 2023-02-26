@@ -1,8 +1,7 @@
 import numpy as np
 
 from ..EA import Individual
-from . import AbstractMutation
-
+from .utils import AbstractMutation
     
 class GaussMutation(AbstractMutation):
     '''

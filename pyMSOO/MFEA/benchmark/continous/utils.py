@@ -1,6 +1,3 @@
-from .CEC17 import CEC17_benchmark
-from .GECCO20 import GECCO20_benchmark_50tasks
-from .WCCI22 import WCCI22_benchmark
 
 from ....utils.EA import Individual, AbstractTask
 import numpy as np
@@ -77,4 +74,3 @@ class AbstractFunc(AbstractTask):
     @jit(nopython = True)
     def _func(x):
         pass
-

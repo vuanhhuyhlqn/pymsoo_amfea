@@ -1,4 +1,4 @@
-from . import Individual_func, AbstractFunc
+from .utils import Individual_func, AbstractFunc
 from .funcs import Sphere, Rosenbrock, Ackley, Rastrigin, Griewank, Weierstrass, Schwefel
 
 from typing import Tuple, Type, List

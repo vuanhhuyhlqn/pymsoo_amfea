@@ -3,7 +3,7 @@ from typing import Tuple, Type, List
 
 from ..EA import AbstractTask, Individual, Population
 from numba import jit
-from . import AbstractCrossover
+from .utils import AbstractCrossover
 
 class DaS_SBX_Crossover(AbstractCrossover):
     '''
