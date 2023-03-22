@@ -1,1 +1,2 @@
-from .DifferentialEvolution.shade import L_SHADE, SHADE 
+from .DifferentialEvolution.shade import *
+from .DifferentialEvolution.dscg import * 

@@ -205,3 +205,132 @@ class L_SHADE(AbstractSearch):
             self.epoch_M_w[ind.skill_factor].append(delta)
 
         return new_ind
+
+
+
+class LSHADE_LSA21(AbstractSearch): 
+    def __init__(self, len_mem = 30, p_ontop = 0.1) -> None:
+        super().__init__()
+        self.len_mem = len_mem 
+        self.p_ontop = p_ontop 
+        self.archive: list[list[Individual]] = None 
+        self.arc_rate = 5 
+
+        self.first_run = True 
+
+
+
+    def getInforTasks(self, IndClass: Type[Individual], tasks: list[AbstractTask], seed=None):
+        super().getInforTasks(IndClass, tasks, seed)
+
+        # memory of cr and F
+        self.M_cr = np.zeros(shape = (self.nb_tasks, self.len_mem, ), dtype= float) + 0.5
+        self.M_F = np.zeros(shape= (self.nb_tasks, self.len_mem, ), dtype = float) + 0.5
+        self.index_update = [0] * self.nb_tasks
+
+        self.archive = np.empty(shape= (self.nb_tasks, 0)).tolist() 
+
+        # memory of cr and F in epoch
+        self.epoch_M_cr:list[list] = np.empty(shape = (self.nb_tasks, 0)).tolist()
+        self.epoch_M_F: list[list] = np.empty(shape = (self.nb_tasks, 0)).tolist()
+
+        # memory of delta fcost p and o in epoch
+        self.epoch_M_w: list[list] = np.empty(shape = (self.nb_tasks, 0)).tolist()
+    
+    def __call__(self,ind: Individual, population: Population, *args, **kwargs) -> Individual: 
+        super().__call__(*args, **kwargs)
+
+        k = np.random.choice(self.len_mem)
+        cr = np.clip(np.random.normal(loc = self.M_cr[ind.skill_factor][k], scale = 0.1), 0, 1)
+
+        F = 0
+        while F <= 0:
+            F = scipy.stats.cauchy.rvs(loc= self.M_F[ind.skill_factor][k], scale= 0.1) 
+        
+        if F >1: 
+            F = 1 
+    
+        u = (np.random.uniform(size = self.dim_uss) < cr)
+        if np.sum(u) == 0:
+            u = np.zeros(shape= (self.dim_uss,))
+            u[np.random.choice(self.dim_uss)] = 1
+
+                # get best individual
+        ind_best = population.__getIndsTask__(ind.skill_factor, p_ontop= self.p_ontop)
+        while ind_best is ind:
+            ind_best = population.__getIndsTask__(ind.skill_factor, p_ontop= self.p_ontop)
+        
+        ind1 = ind_best 
+        while ind1 is ind_best or ind1 is ind : 
+            ind1 = population.__getIndsTask__(ind.skill_factor, type='random') 
+        
+
+        if self.first_run is False and np.random.rand() < len(self.archive[ind.skill_factor]) / (len(self.archive[ind.skill_factor]) + len(population[ind.skill_factor])): 
+            ind2 = self.archive[ind.skill_factor][np.random.choice(len(self.archive[ind.skill_factor]))]
+        else: 
+            ind2 = ind1 
+            while ind2 is ind_best or ind2 is ind1 or ind2 is ind: 
+                ind2 = population.__getIndsTask__(ind.skill_factor, type='random') 
+        
+
+
+        new_genes = np.where(u, 
+            ind.genes + F * (ind_best.genes - ind.genes + ind1.genes - ind2.genes),
+            ind.genes
+        )
+        new_genes = np.where(new_genes > 1, (ind.genes + 1)/2, new_genes) 
+        new_genes = np.where(new_genes < 0, (ind.genes + 0)/2, new_genes) 
+
+        new_ind = self.IndClass(new_genes)
+        new_ind.skill_factor = ind.skill_factor
+        new_ind.fcost = new_ind.eval(self.tasks[new_ind.skill_factor])
+
+        # save memory 
+        delta = ind.fcost - new_ind.fcost 
+        if delta == 0 : 
+            return new_ind 
+        elif delta > 0: 
+            self.epoch_M_cr[ind.skill_factor].append(cr)
+            self.epoch_M_F[ind.skill_factor].append(F)
+            self.epoch_M_w[ind.skill_factor].append(delta)
+
+            if len(self.archive[ind.skill_factor]) < self.arc_rate * len(population[ind.skill_factor]): 
+                self.archive[ind.skill_factor].append(ind)
+            else: 
+                del self.archive[ind.skill_factor][np.random.choice(len(self.archive[ind.skill_factor]))]
+                self.archive[ind.skill_factor].append(ind)
+            return new_ind 
+        else: 
+            return ind 
+
+
+    def update(self, population, *args, **kwargs) -> None:
+        self.first_run = False 
+        for skf in range(self.nb_tasks): 
+            if(len(self.epoch_M_cr[skf])) > 0: 
+                sum_diff = np.sum(np.array(self.epoch_M_w[skf])) 
+                w = np.array(self.epoch_M_w[skf]) / sum_diff 
+
+                tmp_sum_cr = np.sum(w * np.array(self.epoch_M_cr[skf]))
+                tmp_sum_f = np.sum(w * np.array(self.epoch_M_F[skf])) 
+
+
+                self.M_F[skf][self.index_update[skf]] = np.sum(w * np.array(self.epoch_M_F[skf]) ** 2) / tmp_sum_f
+
+                if (tmp_sum_cr == 0): 
+                    self.M_cr[skf][self.index_update[skf]] = -1 
+                else: 
+                    self.M_cr[skf][self.index_update[skf]] = np.sum(w * np.array(self.epoch_M_cr[skf]) ** 2) / tmp_sum_cr 
+                
+                self.index_update[skf] = (self.index_update[skf] + 1) % self.len_mem
+            
+        
+        # reset epoch mem
+        self.epoch_M_cr:list[list] = np.empty(shape = (self.nb_tasks, 0)).tolist()
+        self.epoch_M_F: list[list] = np.empty(shape = (self.nb_tasks, 0)).tolist()
+        self.epoch_M_w: list[list] = np.empty(shape = (self.nb_tasks, 0)).tolist()
+
+        # update archive size
+        for skf in range(self.nb_tasks): 
+            while len(self.archive[skf]) > len(population[skf]) * self.arc_rate: 
+                del self.archive[skf][np.random.choice(len(self.archive[skf]))]

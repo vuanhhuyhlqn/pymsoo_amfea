@@ -1,2 +1,2 @@
-from .shade import SHADE, L_SHADE
-from .dscg import LocalSearch_DSCG
+from .shade import * 
+from .dscg import * 
