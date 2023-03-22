@@ -1,4 +1,4 @@
-from .. import AbstractSearch
+from ..Abstract import AbstractSearch
 from ...EA import AbstractTask, Individual, Population
 
 from typing import Type, List
