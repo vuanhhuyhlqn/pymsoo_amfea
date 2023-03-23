@@ -6,7 +6,7 @@ from numba import jit
 from .utils import AbstractCrossover
 
 class SBX_LSA21(AbstractCrossover): 
-    def __init__(self, nc=2, default_rmp = 0.5, *args, **kwargs): 
+    def __init__(self, nc=2, k = 7, default_rmp = 0.5, *args, **kwargs): 
         self.nc= nc
         
         self.best_partner = None 
