@@ -3,6 +3,11 @@ from ...utils import Crossover, Mutation, Selection, Search
 from pyMSOO.utils.EA import AbstractTask 
 from . import AbstractModel 
 import numpy as np 
+from ...utils.numba_utils import * 
+
+import time 
+from collections import defaultdict
+
 
 class model(AbstractModel.model):
 
@@ -108,7 +113,8 @@ class model(AbstractModel.model):
             epoch= 0 
 
             while np.sum(eval_k) <= MAXEVALS and stop is False: 
-                gen += 1 
+                gen += 1
+
                 offsprings = Population(
                     self.IndClass, 
                     nb_inds_tasks=[0] * len(self.tasks), 
@@ -119,12 +125,15 @@ class model(AbstractModel.model):
                 for skf in range(0, len(self.tasks)): 
 
                     for idx_ind, ind in enumerate(population[skf]): 
-                        partner_task = np.random.choice(len(self.tasks))
+
+                        partner_task = numba_randomchoice(len(self.tasks))
+
                         if partner_task == skf: 
                             # intra
                             off = self.search(ind = ind, population = population)
                             offsprings[skf].__addIndividual__(off)
                             eval_k[skf] += 1 
+
                         else: 
                             rmp = 0 
                             if self.rmp.best_partner[skf] == partner_task: 
@@ -132,13 +141,13 @@ class model(AbstractModel.model):
                             else : 
                                 mu_rmp = self.rmp.rmp[skf][partner_task] 
                                 
-                                rmp = np.random.normal(loc= mu_rmp, scale= 0.1 )
+                                rmp = numba_random_gauss(mean= mu_rmp, sigma= 0.1)
                                 while rmp <= 0 or rmp > 1: 
-                                    rmp = np.random.normal(loc= mu_rmp, scale= 0.1 )
+                                    rmp = numba_random_gauss(mean= mu_rmp, sigma= 0.1)
 
-                            if np.random.rand() <= rmp: 
+                            if numba_random_uniform()[0] <= rmp: 
                                 ind2 = population[partner_task].__getRandomItems__(size=1)[0]
-                                oa, ob = self.crossover(ind, ind2, skf, skf)
+                                oa, ob = self.crossover(ind, ind2, skf, skf) 
 
                                 oa.fcost = oa.eval(self.tasks[oa.skill_factor])
                                 ob.fcost = ob.eval(self.tasks[ob.skill_factor])
@@ -158,15 +167,16 @@ class model(AbstractModel.model):
                                     offsprings[skf].__addIndividual__(survival) 
                                 else: 
                                     offsprings[skf].__addIndividual__(ind)
+
                             else: 
                                 off = self.search(ind = ind, population = population)
                                 offsprings[skf].__addIndividual__(off)
                                 eval_k[skf] += 1 
                     
-
                     population.ls_subPop[skf] = offsprings.ls_subPop[skf]
                     # population.update_rank() 
                     population[skf].update_rank() 
+
                     if gen % 50 == 0: 
                         ls = Search.LocalSearch_DSCG() 
                         ls.getInforTasks(self.IndClass, self.tasks, seed = self.seed) 
@@ -187,10 +197,9 @@ class model(AbstractModel.model):
                 self.selection(population, nb_inds_tasks)
                 # update operators
                 self.rmp.update()
-                self.crossover.update(population = population)
                 self.mutation.update(population = population)
                 self.search.update(population) 
-
+                self.crossover.update(population = population)
                 # '''local search'''
                 # if gen % 50 == 0: 
                 #     # if (epoch - before_epoch) > kwargs['step_over']: 
@@ -226,10 +235,10 @@ class model(AbstractModel.model):
             
             self.last_pop = population
             self.render_process(epoch/nb_generations, ['Pop_size', 'Cost'], [[len(population)], self.history_cost[-1]], use_sys= True, print_format_e= True)
-            print()
-            # print(p_choose_father)
-            print(eval_k)
-            print('END!')
+            # print()
+            # # print(p_choose_father)
+            # print(eval_k)
+            # print('END!')
             return self.last_pop.get_solves()            
             
 

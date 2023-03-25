@@ -6,6 +6,7 @@ from ...MFEA.model import *
 import inspect
 import sys 
 import numpy as np 
+import os 
 # from ..MultiRun.RunMultiTime import MultiTimeModel 
 
 primary_type= [int,np.int32,np.uint8, float, np.float32, np.float64, np.ndarray,tuple, bool, str, list] 
@@ -131,8 +132,22 @@ primary_type= [int,np.int32,np.uint8, float, np.float32, np.float64, np.ndarray,
 
 def saveModel(model, PATH, remove_tasks= True, total_time= None):
     new_model = process_save_object(model, dict())
-    with open("new_model.mso", 'wb') as file: 
+    
+    if total_time is not None:
+        new_model['total_time'] = total_time 
+
+    index = -1 
+    while PATH[index] != '/':
+        index -= 1 
+    if os.path.isdir(PATH[0:index]) is False:
+        os.makedirs(PATH[0:index])
+    
+    with open(PATH, 'wb') as file: 
         pickle.dump(new_model, file)
+    
+    return "Done" 
+
+    
 
 def process_save_list(ls): 
     '''

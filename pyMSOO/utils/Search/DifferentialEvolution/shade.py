@@ -4,6 +4,8 @@ from ...EA import AbstractTask, Individual, Population
 from typing import Type, List
 import numpy as np
 import scipy.stats
+from ...numba_utils import * 
+import time
 
 class SHADE(AbstractSearch):
     def __init__(self, len_mem = 30, p_best_type:str = 'ontop', p_ontop = 0.1, tournament_size = 2) -> None:
@@ -207,6 +209,16 @@ class L_SHADE(AbstractSearch):
         return new_ind
 
 
+@jit(nopython=True)
+def produce_inds(ind_genes, best_genes, ind1_genes, ind2_genes, F, u):
+    new_genes = np.where(u,
+        ind_genes + F * (best_genes - ind_genes + ind1_genes - ind2_genes),
+        ind_genes
+    )
+    new_genes = np.where(new_genes > 1, (ind_genes + 1)/2, new_genes) 
+    new_genes = np.where(new_genes < 0, (ind_genes + 0)/2, new_genes)
+
+    return new_genes
 
 class LSHADE_LSA21(AbstractSearch): 
     def __init__(self, len_mem = 30, p_ontop = 0.1) -> None:
@@ -240,22 +252,30 @@ class LSHADE_LSA21(AbstractSearch):
     def __call__(self,ind: Individual, population: Population, *args, **kwargs) -> Individual: 
         super().__call__(*args, **kwargs)
 
-        k = np.random.choice(self.len_mem)
-        cr = np.clip(np.random.normal(loc = self.M_cr[ind.skill_factor][k], scale = 0.1), 0, 1)
+        k = numba_randomchoice(self.len_mem)
+        # cr = numba_clip()
 
+        cr = numba_random_gauss(mean = self.M_cr[ind.skill_factor][k], sigma= 0.1)
+        if cr < 0: cr = 0 
+        elif cr > 1: cr = 1
+        # cr = np.clip(numba_random_gauss(mean = self.M_cr[ind.skill_factor][k], sigma= 0.1), 0, 1)
         F = 0
+        
         while F <= 0:
-            F = scipy.stats.cauchy.rvs(loc= self.M_F[ind.skill_factor][k], scale= 0.1) 
+            
+            F= numba_random_cauchy(self.M_F[ind.skill_factor][k], 0.1)
+            # F = scipy.stats.cauchy.rvs(loc= self.M_F[ind.skill_factor][k], scale= 0.1) 
+            
         
         if F >1: 
             F = 1 
-    
-        u = (np.random.uniform(size = self.dim_uss) < cr)
+        
+        u = (numba_random_uniform(size = self.dim_uss) < cr)
         if np.sum(u) == 0:
             u = np.zeros(shape= (self.dim_uss,))
-            u[np.random.choice(self.dim_uss)] = 1
-
+            u[numba_randomchoice(self.dim_uss)] = 1
                 # get best individual
+
         ind_best = population.__getIndsTask__(ind.skill_factor, p_ontop= self.p_ontop)
         while ind_best is ind:
             ind_best = population.__getIndsTask__(ind.skill_factor, p_ontop= self.p_ontop)
@@ -265,26 +285,27 @@ class LSHADE_LSA21(AbstractSearch):
             ind1 = population.__getIndsTask__(ind.skill_factor, type='random') 
         
 
-        if self.first_run is False and np.random.rand() < len(self.archive[ind.skill_factor]) / (len(self.archive[ind.skill_factor]) + len(population[ind.skill_factor])): 
-            ind2 = self.archive[ind.skill_factor][np.random.choice(len(self.archive[ind.skill_factor]))]
+        if self.first_run is False and numba_random_uniform()[0] < len(self.archive[ind.skill_factor]) / (len(self.archive[ind.skill_factor]) + len(population[ind.skill_factor])): 
+            ind2 = self.archive[ind.skill_factor][numba_randomchoice(len(self.archive[ind.skill_factor]))]
         else: 
             ind2 = ind1 
             while ind2 is ind_best or ind2 is ind1 or ind2 is ind: 
                 ind2 = population.__getIndsTask__(ind.skill_factor, type='random') 
         
 
-
-        new_genes = np.where(u, 
-            ind.genes + F * (ind_best.genes - ind.genes + ind1.genes - ind2.genes),
-            ind.genes
-        )
-        new_genes = np.where(new_genes > 1, (ind.genes + 1)/2, new_genes) 
-        new_genes = np.where(new_genes < 0, (ind.genes + 0)/2, new_genes) 
+        new_genes = produce_inds(ind.genes, ind_best.genes, ind1.genes, ind2.genes, F, u)
+        # new_genes = np.where(u, 
+        #     ind.genes + F * (ind_best.genes - ind.genes + ind1.genes - ind2.genes),
+        #     ind.genes
+        # )
+        # new_genes = np.where(new_genes > 1, (ind.genes + 1)/2, new_genes) 
+        # new_genes = np.where(new_genes < 0, (ind.genes + 0)/2, new_genes) 
 
         new_ind = self.IndClass(new_genes)
         new_ind.skill_factor = ind.skill_factor
-        new_ind.fcost = new_ind.eval(self.tasks[new_ind.skill_factor])
 
+        new_ind.fcost = new_ind.eval(self.tasks[new_ind.skill_factor])
+        
         # save memory 
         delta = ind.fcost - new_ind.fcost 
         if delta == 0 : 
@@ -297,7 +318,7 @@ class LSHADE_LSA21(AbstractSearch):
             if len(self.archive[ind.skill_factor]) < self.arc_rate * len(population[ind.skill_factor]): 
                 self.archive[ind.skill_factor].append(ind)
             else: 
-                del self.archive[ind.skill_factor][np.random.choice(len(self.archive[ind.skill_factor]))]
+                del self.archive[ind.skill_factor][numba_randomchoice(len(self.archive[ind.skill_factor]))]
                 self.archive[ind.skill_factor].append(ind)
             return new_ind 
         else: 
@@ -333,4 +354,4 @@ class LSHADE_LSA21(AbstractSearch):
         # update archive size
         for skf in range(self.nb_tasks): 
             while len(self.archive[skf]) > len(population[skf]) * self.arc_rate: 
-                del self.archive[skf][np.random.choice(len(self.archive[skf]))]
+                del self.archive[skf][numba_randomchoice(len(self.archive[skf]))]

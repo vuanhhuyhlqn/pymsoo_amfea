@@ -4,6 +4,8 @@ from ...EA import AbstractTask, Individual, Population
 from typing import Type, List
 import numpy as np
 
+from ...numba_utils import * 
+
 class LocalSearch_DSCG(AbstractSearch):
     def __init__(self) -> None:
         super().__init__() 
@@ -39,11 +41,8 @@ class LocalSearch_DSCG(AbstractSearch):
 
             while (evals < fes - evals_per_linesarch) : 
                 evals, x[direct] = self.lineSearch(x[direct-1], evals,  self.EVALS_PER_LINE_SEARCH, self.tasks[start_point.skill_factor], s, v[direct-1]) 
-                # x[direct] = result
-
                 for i in range(1, direct + 1, 1) : 
-                    for j in range(self.dim_uss): 
-                        a[i-1][j] += x[direct].genes[j] - x[direct-1].genes[j] 
+                    a[i-1] += x[direct].genes - x[direct-1].genes 
                 
                 if result.fcost > x[direct].fcost : 
                     result.genes = np.copy(x[direct].genes) 
@@ -54,7 +53,7 @@ class LocalSearch_DSCG(AbstractSearch):
                 else: 
                     break 
                 pass 
-            
+
             if evals >= fes or direct < self.dim_uss : 
                 break 
             
@@ -92,9 +91,7 @@ class LocalSearch_DSCG(AbstractSearch):
                     overall_ls_eval = rest_eval 
                 else: 
                     overall_ls_eval = evals_per_linesarch 
-                
                 evals, x[direct] = self.lineSearch(x[direct-1], evals, overall_ls_eval, self.tasks[start_point.skill_factor], s, v[direct-1])
-
                 if result.fcost > x[direct].fcost: 
                     result.fcost = np.copy(x[direct].fcost) 
                     result.genes = np.copy(x[direct].genes) 
@@ -129,6 +126,7 @@ class LocalSearch_DSCG(AbstractSearch):
             return evals, x[self.dim_uss + 1]
         
         return evals, result
+    
     def lineSearch(self, start_point: Individual, eval: int,  fes: int, task: AbstractTask, step_size: int, v: np.array) :
 
         result: Individual = self.IndClass(genes = None, dim = self.dim_uss)
@@ -158,7 +156,6 @@ class LocalSearch_DSCG(AbstractSearch):
         if x.fcost > x0.fcost: 
             x.genes = x.genes - 2 * s * v 
             s = -s 
-
             x.fcost = x.eval(task) 
             evals += 1 
 

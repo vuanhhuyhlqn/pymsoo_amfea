@@ -79,8 +79,6 @@ def restore_dict_attr(diction: dict):
             if error not in ls_error:
                 if PRINT_ERROR: print(error)
                 ls_error.append(error)
-    
-
 
 def assign_attribute(model, attri_diction: dict):
     global primary_type
@@ -103,7 +101,6 @@ def assign_attribute(model, attri_diction: dict):
                 ls_error.append(error)
         
     return model 
-
 
 def restore_object(diction):
     if type(diction) is not dict: 
@@ -193,7 +190,6 @@ def restore_object(diction):
 
     new_model = assign_attribute(instance_model, diction)
     return new_model 
-
 
 def loadModel(PATH: str, ls_tasks=None, set_attribute=False, mso_orginal= False) -> AbstractModel:
     '''
