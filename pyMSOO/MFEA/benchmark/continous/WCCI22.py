@@ -278,39 +278,39 @@ class WCCI22_benchmark():
             matrix = np.loadtxt(file_dir + rotation_file)
             shift = np.loadtxt(file_dir + shift_file)
             if ID == 1:
-                task.append(__class__.Task(__class__.dim,6,-100,100,shift,matrix))
+                task.append(WCCI22_2tasks_TaskClass(__class__.dim,6,-100,100,shift,matrix))
             if ID == 2:
-                task.append(__class__.Task(__class__.dim,7,-100,100,shift,matrix))
+                task.append(WCCI22_2tasks_TaskClass(__class__.dim,7,-100,100,shift,matrix))
             if ID == 3: 
-                task.append(__class__.Task(__class__.dim,17,-100,100,shift,matrix))
+                task.append(WCCI22_2tasks_TaskClass(__class__.dim,17,-100,100,shift,matrix))
                 f = path+'/__references__/WCCI2022/SO-Complex-Benchmarks/Tasks/shuffle/shuffle_data_' + str(17) + "_D" + str(__class__.dim)+'.txt'
                 task[i-1].SS = np.loadtxt(f).astype(int)
             if ID == 4:
-                task.append(__class__.Task(__class__.dim,13,-100,100,shift,matrix))
+                task.append(WCCI22_2tasks_TaskClass(__class__.dim,13,-100,100,shift,matrix))
             if ID == 5: 
-                task.append(__class__.Task(__class__.dim,15,-100,100,shift,matrix))
+                task.append(WCCI22_2tasks_TaskClass(__class__.dim,15,-100,100,shift,matrix))
             if ID == 6:
-                task.append(__class__.Task(__class__.dim,21,-100,100,shift,matrix))
+                task.append(WCCI22_2tasks_TaskClass(__class__.dim,21,-100,100,shift,matrix))
                 f = path+'/__references__/WCCI2022/SO-Complex-Benchmarks/Tasks/shuffle/shuffle_data_' + str(21) + "_D" + str(__class__.dim)+'.txt'
                 task[i-1].SS = np.loadtxt(f).astype(int)
             if ID == 7:
-                task.append(__class__.Task(__class__.dim,22,-100,100,shift,matrix))
+                task.append(WCCI22_2tasks_TaskClass(__class__.dim,22,-100,100,shift,matrix))
                 f = path+'/__references__/WCCI2022/SO-Complex-Benchmarks/Tasks/shuffle/shuffle_data_' + str(22) + "_D" + str(__class__.dim)+'.txt'
                 task[i-1].SS = np.loadtxt(f).astype(int)
             if ID == 8:
-                task.append(__class__.Task(__class__.dim,5,-100,100,shift,matrix))
+                task.append(WCCI22_2tasks_TaskClass(__class__.dim,5,-100,100,shift,matrix))
             if ID == 9:
                 if i == 1:
-                    task.append(__class__.Task(__class__.dim,11,-100,100,shift,matrix))
+                    task.append(WCCI22_2tasks_TaskClass(__class__.dim,11,-100,100,shift,matrix))
                 else :
-                    task.append(__class__.Task(__class__.dim,16,-100,100,shift,matrix))
+                    task.append(WCCI22_2tasks_TaskClass(__class__.dim,16,-100,100,shift,matrix))
             if ID == 10:
                 if i == 1:
-                    task.append(__class__.Task(__class__.dim,20,-100,100,shift,matrix))
+                    task.append(WCCI22_2tasks_TaskClass(__class__.dim,20,-100,100,shift,matrix))
                     f = path+'/__references__/WCCI2022/SO-Complex-Benchmarks/Tasks/shuffle/shuffle_data_' + str(20) + "_D" + str(__class__.dim)+'.txt'
                     task[0].SS = np.loadtxt(f).astype(int)
                 else:
-                    task.append(__class__.Task(__class__.dim,21,-100,100,shift,matrix))
+                    task.append(WCCI22_2tasks_TaskClass(__class__.dim,21,-100,100,shift,matrix))
                     f = path+'/__references__/WCCI2022/SO-Complex-Benchmarks/Tasks/shuffle/shuffle_data_' + str(21) + "_D" + str(__class__.dim)+'.txt'
                     task[1].SS = np.loadtxt(f).astype(int)
         return task, Individual_func

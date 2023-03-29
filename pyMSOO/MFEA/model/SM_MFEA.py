@@ -4,7 +4,8 @@ from numba import jit
 import random
 
 from ...utils.EA import *
-from ...utils import Crossover, Mutation, Search, Selection
+from ...utils import Crossover, Mutation, Selection
+from ...utils.Search.DifferentialEvolution.shade import * 
 from . import AbstractModel
 from ...utils.numba_utils import numba_randomchoice_w_prob
 
@@ -53,7 +54,7 @@ class model(AbstractModel.model):
         tasks: List[AbstractTask], 
         crossover: Crossover.SBX_Crossover, 
         mutation: Mutation.PolynomialMutation, 
-        search: Search.SHADE,
+        search,
         selection: Selection.ElitismSelection, 
         *args, **kwargs):
         super().compile(IndClass, tasks, crossover, mutation, selection, *args, **kwargs)
