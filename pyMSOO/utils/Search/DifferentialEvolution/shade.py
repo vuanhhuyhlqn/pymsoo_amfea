@@ -232,7 +232,7 @@ class LSHADE_LSA21(AbstractSearch):
 
 
 
-    def getInforTasks(self, IndClass: Type[Individual], tasks: list[AbstractTask], seed=None):
+    def getInforTasks(self, IndClass: Type[Individual], tasks: List[AbstractTask], seed=None):
         super().getInforTasks(IndClass, tasks, seed)
 
         # memory of cr and F

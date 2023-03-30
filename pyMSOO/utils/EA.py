@@ -136,6 +136,25 @@ class SubPopulation:
     def __len__(self): 
         return len(self.ls_inds)
 
+    #TODO: Check logic and optimize this function
+    def __setitem__(self, index, value):
+        try:
+            self.ls_inds[index] = value
+        except:
+            if type(index) == int:
+                self.ls_inds[index] = value
+            elif type(index) == list:
+                # print(len(self.ls_inds), len(value), len(index))
+                for i, x in enumerate(index):
+                    if x >= len(self):
+                        raise ValueError("Out of bound")
+                    
+                    self.ls_inds[x] = value[i]
+            elif type(index) == slice:
+                self.ls_inds[index] = value
+            else:
+                raise TypeError('Int, Slice or List[int], not ' + str(type(index)))
+
     def __getitem__(self, index):
         try:
             return self.ls_inds[index]
