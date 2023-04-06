@@ -40,6 +40,8 @@ def module_class_str_to_class(module, classname, old_name_module= None, new_name
     # print(module, classname)
     if module == old_name_module: 
         module= new_name_module
+    elif module == "SMP_MFEA":
+        module= "SM_MFEA"
     return getattr(sys.modules[__name__].__dict__[module], classname)
 
 
