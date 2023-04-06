@@ -2,6 +2,7 @@ import pickle
 from pathlib import Path 
 
 from ...MFEA.model import * 
+from ...MFEA.competitionModel import * 
 from pyMSOO.utils.Crossover import *
 from pyMSOO.utils.Mutation import *
 from pyMSOO.utils.Selection import *
