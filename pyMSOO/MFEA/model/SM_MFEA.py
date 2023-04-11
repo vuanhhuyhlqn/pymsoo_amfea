@@ -4,7 +4,7 @@ from numba import jit
 import random
 
 from ...utils.EA import *
-from ...utils import Crossover, Mutation, Selection
+from ...utils import Crossover, Mutation, DimensionAwareStrategy, Selection
 from ...utils.Search.DifferentialEvolution.shade import * 
 from . import AbstractModel
 from ...utils.numba_utils import numba_randomchoice_w_prob
@@ -54,12 +54,10 @@ class model(AbstractModel.model):
         tasks: List[AbstractTask], 
         crossover: Crossover.SBX_Crossover, 
         mutation: Mutation.PolynomialMutation, 
-        search,
-        selection: Selection.ElitismSelection, 
+        dimension_strategy: DimensionAwareStrategy.AbstractDaS = DimensionAwareStrategy.NoDaS(),
+        selection: Selection.AbstractSelection= Selection.ElitismSelection(), 
         *args, **kwargs):
-        super().compile(IndClass, tasks, crossover, mutation, selection, *args, **kwargs)
-        self.search = search
-        self.search.getInforTasks(IndClass, tasks, seed = self.seed)
+        super().compile(IndClass, tasks, crossover, mutation, dimension_strategy, selection, *args, **kwargs)
 
     def render_smp(self,  shape = None, title = None, figsize = None, dpi = 100, step = 1, re_fig = False, label_shape= None, label_loc= None):
         
@@ -112,7 +110,7 @@ class model(AbstractModel.model):
             return fig
 
     def fit(self, nb_generations: int, nb_inds_each_task: int, nb_inds_min = None,
-        lr = 1, mu= 0.1,
+        lr = 0.1, mu= 0.1,
         evaluate_initial_skillFactor = False,
         *args, **kwargs):
         super().fit(*args, **kwargs)
@@ -203,6 +201,10 @@ class model(AbstractModel.model):
                     
                     oa, ob = self.crossover(pa, pb, skf_pa, skf_pa, population)
 
+                    # dimension strategy
+                    oa = self.dimension_strategy(oa, pb.skill_factor, pa)
+                    ob = self.dimension_strategy(ob, pb.skill_factor, pb if skf_pa == skf_pb else pa)
+
                 else:
                     pa, pb = population.__getIndsTask__(skf_pa, type= 'random', size= 2)
 
@@ -212,6 +214,7 @@ class model(AbstractModel.model):
                     ob = self.mutation(pb, return_newInd= True)
                     ob.skill_factor = skf_pa
 
+                
                 # add oa, ob to offsprings population and eval fcost
                 offsprings.__addIndividual__(oa)
                 offsprings.__addIndividual__(ob)
@@ -240,7 +243,7 @@ class model(AbstractModel.model):
             # update operators
             self.crossover.update(population = population)
             self.mutation.update(population = population)
-            self.search.update()
+            self.dimension_strategy.update(population = population)
 
             # update smp
             for skf in range(len(self.tasks)):
