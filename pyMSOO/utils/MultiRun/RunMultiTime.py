@@ -6,7 +6,7 @@ from typing import List
 from pathlib import Path
 
 from ...MFEA.model import AbstractModel
-from ..LoadSaveModel.saveModel import saveModel
+from ..LoadSaveModel import saveModel
 
 def get_model_name(model: AbstractModel.model):
     fullname = model.__module__

@@ -1,11 +1,3 @@
-import os 
-import sys 
-import numpy as np 
-import pandas as pd
-import scipy 
-import inspect 
-import pickle 
-
 from pyMSOO.MFEA.model import MFEA_base, SM_MFEA, LSA21
 from pyMSOO.MFEA.competitionModel import SM_MFEA_Competition 
 from pyMSOO.utils.Crossover import *
@@ -23,7 +15,7 @@ from pyMSOO.MFEA.benchmark.continous.funcs import *
 
 from pyMSOO.utils.MultiRun.RunMultiTime import * 
 from pyMSOO.utils.MultiRun.RunMultiBenchmark import * 
-from pyMSOO.utils.LoadSaveModel.LoadModel import loadModel 
+from pyMSOO.utils.LoadSaveModel.load_utils import loadModel 
 from pyMSOO.utils.numba_utils import *
 
 

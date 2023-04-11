@@ -1,6 +1,3 @@
-import pickle 
-from pathlib import Path 
-
 from ...MFEA.model import * 
 from ...MFEA.competitionModel import * 
 from pyMSOO.utils.Crossover import *
@@ -11,9 +8,6 @@ from pyMSOO.MFEA.benchmark.continous import *
 from pyMSOO.utils.MultiRun.RunMultiTime import * 
 
 from pyMSOO.utils.EA import * 
-from pyMSOO.MFEA.benchmark.continous.CEC17 import CEC17_benchmark 
-from pyMSOO.MFEA.benchmark.continous.WCCI22 import WCCI22_benchmark
-from pyMSOO.MFEA.benchmark.continous.utils import Individual_func 
 from pyMSOO.MFEA.benchmark.continous.funcs import * 
 
 import inspect
@@ -43,7 +37,6 @@ def module_class_str_to_class(module, classname, old_name_module= None, new_name
     elif module == "SMP_MFEA":
         module= "SM_MFEA"
     return getattr(sys.modules[__name__].__dict__[module], classname)
-
 
 def restore_list_attr(ls):
     global primary_type 
@@ -193,65 +186,3 @@ def restore_object(diction):
 
     new_model = assign_attribute(instance_model, diction)
     return new_model 
-
-def loadModel(PATH: str, ls_tasks=None, set_attribute=False, mso_orginal= False) -> AbstractModel:
-    '''
-    `.mso`
-    '''
-    if mso_orginal: 
-        assert type(PATH) == str
-
-        # check tail
-        path_tmp = Path(PATH)
-        index_dot = None
-        for i in range(len(path_tmp.name)):
-            if path_tmp.name[i] == '.':
-                index_dot = i
-                break
-
-        if index_dot is None:
-            PATH += '.mso'
-        else:
-            assert path_tmp.name[i:] == '.mso', 'Only load model with .mso, not ' + \
-                path_tmp.name[i:]
-
-        f = open(PATH, 'rb')
-        model = pickle.load(f)
-        f.close()
-
-        cls = model.__class__
-        model.__class__ = cls.__class__(cls.__name__, (cls, model.model), {})
-
-        if model.tasks is None:
-            model.tasks = ls_tasks
-            if set_attribute is True:
-                assert ls_tasks is not None, 'Pass ls_tasks plz!'
-                model.compile_kwargs['tasks'] = ls_tasks
-                for submodel in model.ls_model:
-                    submodel.tasks = ls_tasks
-                    submodel.last_pop.ls_tasks = ls_tasks
-                    for idx, subpop in enumerate(submodel.last_pop):
-                        subpop.task = ls_tasks[idx]
-                    if 'attr_tasks' in submodel.kwargs.keys():
-                        for attribute in submodel.kwargs['attr_tasks']:
-                            # setattr(submodel, getattr(subm, name), None)
-                            setattr(getattr(submodel, attribute),
-                                    'tasks', ls_tasks)
-                            pass
-                    else:
-                        submodel.crossover.tasks = ls_tasks
-                        submodel.mutation.tasks = ls_tasks
-
-                    # submodel.search.tasks = ls_tasks
-                    # submodel.crossover.tasks = ls_tasks
-                    # submodel.mutation.tasks = ls_tasks
-
-        if model.name.split('.')[-1] == 'AbstractModel':
-            model.name = path_tmp.name.split('.')[0]
-        return model
-
-    else: 
-        with open(PATH, 'rb') as file: 
-            model_dict = pickle.load(file) 
-        
-        return restore_object(model_dict) 
