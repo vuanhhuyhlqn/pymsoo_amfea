@@ -19,6 +19,7 @@ from pyMSOO.MFEA.benchmark.continous.funcs import *
 import inspect
 import sys 
 import numpy as np 
+import pandas as pd 
 
 
 PRINT_ERROR = True 
@@ -255,3 +256,58 @@ def loadModel(PATH: str, ls_tasks=None, set_attribute=False, mso_orginal= False)
             model_dict = pickle.load(file) 
         
         return restore_object(model_dict) 
+
+
+
+def loadModelFromTxt(source_path, model, target_path = "./", remove_tasks: bool = False, history_cost_shape= (1000, 2), nb_runs = 1, ls_tasks = [], name_model = None, total_time= None ):
+    '''
+    File txt has the format of MTO competition.
+
+    Load result from file txt and save it to .mso file
+    
+    Args: 
+        remove_tasks: Do remove tasks when save model or not ? 
+        history_cost_shape: The history cost shape in one run. 
+        nb_runs: the number run of model 
+        ls_tasks: list of tasks
+        name_model (optional): that will be use as name to save the model 
+    
+    Results: 
+        Save multitime model file 
+    '''
+
+    assert len(ls_tasks) > 0 
+    data = pd.read_csv(source_path, header= None) 
+    # data = pd.read_csv(source_path, header= None, delim_whitespace= True).astype("float") 
+    history_cost_shape = (data.shape[0], (data.shape[1] - 1) // nb_runs)
+    
+    history_cost = np.zeros(shape = (nb_runs,history_cost_shape[0], history_cost_shape[1]))
+    data_transpose = data.transpose() 
+    count_row = 1
+    for i_run in range(nb_runs): 
+        for idx_task in range(len(ls_tasks)):
+            history_cost[i_run, :,idx_task] = data_transpose.iloc[count_row, :]
+            count_row += 1  
+    
+    avg_history_cost = np.average(history_cost, axis = 0) 
+    assert avg_history_cost.shape == history_cost_shape 
+
+
+    mutiltime_model = MultiTimeModel(model) 
+    mutiltime_model.compile()
+    mutiltime_model.tasks = None 
+    mutiltime_model.history_cost = avg_history_cost
+    mutiltime_model.nb_run = nb_runs 
+
+    for run in range(nb_runs): 
+        new_model = model.model() 
+        new_model.history_cost = history_cost[run] 
+        mutiltime_model.ls_model.append(new_model)
+    if name_model is None:
+        name_model = source_path.split("/")[-1].split(".")[0]
+    
+    if os.path.isdir(target_path) is False: 
+        os.makedirs(target_path) 
+    
+    return mutiltime_model
+    # return saveModel(model= mutiltime_model, PATH= f"{target_path}/{name_model}.mso", remove_tasks= remove_tasks, total_time= total_time) 
