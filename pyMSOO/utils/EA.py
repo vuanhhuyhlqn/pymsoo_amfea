@@ -30,9 +30,9 @@ class Individual:
     + `skill_factor`: skill factor of the individual\n
     + `fcost`: factorial cost of the individual for skill_factor
     '''
-    def __init__(self, genes,  parent= None, dim= None, *args, **kwargs) -> None: 
-        self.skill_factor: int = None
-        self.fcost: float = None
+    def __init__(self, genes, skill_factor = None, fcost = None, parent= None, dim= None, *args, **kwargs) -> None: 
+        self.skill_factor: int = skill_factor
+        self.fcost: float = fcost
         self.genes: np.ndarray = genes
         self.parent: Individual = parent
 
@@ -141,16 +141,17 @@ class SubPopulation:
         try:
             self.ls_inds[index] = value
         except:
-            if type(index) == int:
+            if isinstance(index, int):
                 self.ls_inds[index] = value
-            elif type(index) == list:
+            elif isinstance(index, list):
                 # print(len(self.ls_inds), len(value), len(index))
                 for i, x in enumerate(index):
                     if x >= len(self):
                         raise ValueError("Out of bound")
                     
                     self.ls_inds[x] = value[i]
-            elif type(index) == slice:
+            elif isinstance(index, slice):
+                print(index)
                 self.ls_inds[index] = value
             else:
                 raise TypeError('Int, Slice or List[int], not ' + str(type(index)))
@@ -255,6 +256,9 @@ class SubPopulation:
             if e is ind:
                 return idx
         raise ValueError(str(ind) + "is not in subPop")
+    
+    def getFitness(self):
+        return [ind.fcost for ind in self.ls_inds]
 
 class Population:
     def __init__(self, IndClass: Type[Individual], dim, nb_inds_tasks: List[int], list_tasks:List[AbstractTask] = [], 

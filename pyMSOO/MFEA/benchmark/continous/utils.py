@@ -5,8 +5,8 @@ from numba import jit
 
 
 class Individual_func(Individual):
-    def __init__(self, genes, parent= None, dim= None, *args, **kwargs) -> None:
-        super().__init__(genes, parent, dim)
+    def __init__(self, genes, skill_factor = None, fcost = None, parent= None, dim= None, *args, **kwargs) -> None:
+        super().__init__(genes, skill_factor, fcost, parent, dim)
         if genes is None:
             self.genes: np.ndarray = np.random.rand(dim)
 

@@ -262,9 +262,14 @@ class model(AbstractModel.model):
         inv_gene_cov_a = numba_linalgo_pinv(gene_cov_a)
 
         D = gene_cov_a.shape[0]
-
-        det_b = max(numba_linalgo_det(gene_cov_b), 0.001)
-        det_a = max(numba_linalgo_det(gene_cov_a), 0.001)
+        try:
+            det_b = max(numba_linalgo_det(gene_cov_b), 0.001)
+        except:
+            det_b = 0.001
+        try:
+            det_a = max(numba_linalgo_det(gene_cov_a), 0.001)
+        except:
+            det_a = 0.001
 
         kld_a_b = np.trace(numba_dot(inv_gene_cov_b, gene_cov_a)) \
                 + numba_dot(numba_dot(np.transpose(gene_mean_b - gene_mean_a), inv_gene_cov_b), (gene_mean_b - gene_mean_a)) - D\
