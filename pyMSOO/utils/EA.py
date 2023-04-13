@@ -324,7 +324,13 @@ class Population:
         return sum([len(subPop) for subPop in self.ls_subPop])
 
     def __getitem__(self, index) -> SubPopulation:
-        return self.ls_subPop[index]
+        try:
+            return self.ls_subPop[index]
+        except:
+            if isinstance(index, int):
+                return self.ls_subPop[index]
+            elif isinstance(index, list):
+                return [self.ls_subPop[i] for i in index]
 
     def __getIndsTask__(self, idx_task, size: int = None, replace: bool = False, type:str = 'random', tournament_size= 2,  
         p_ontop = None,
