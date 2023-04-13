@@ -4,9 +4,9 @@ from numba import jit
 import random
 
 from ...utils.EA import *
-from ...utils import Crossover, Mutation, DimensionAwareStrategy, Selection
+from ...utils import Crossover, Mutation, Selection, Search
 from ...utils.Search.DifferentialEvolution.shade import * 
-from . import AbstractModel
+from ..model import AbstractModel
 from ...utils.numba_utils import numba_randomchoice_w_prob
 
 class model(AbstractModel.model):
@@ -54,10 +54,12 @@ class model(AbstractModel.model):
         tasks: List[AbstractTask], 
         crossover: Crossover.SBX_Crossover, 
         mutation: Mutation.PolynomialMutation, 
-        dimension_strategy: DimensionAwareStrategy.AbstractDaS = DimensionAwareStrategy.NoDaS(),
-        selection: Selection.AbstractSelection= Selection.ElitismSelection(), 
+        search,
+        selection: Selection.ElitismSelection, 
         *args, **kwargs):
-        super().compile(IndClass, tasks, crossover, mutation, dimension_strategy, selection, *args, **kwargs)
+        super().compile(IndClass, tasks, crossover, mutation, selection, *args, **kwargs)
+        self.search = search
+        self.search.getInforTasks(IndClass, tasks, seed = self.seed)
 
     def render_smp(self,  shape = None, title = None, figsize = None, dpi = 100, step = 1, re_fig = False, label_shape= None, label_loc= None):
         
@@ -110,7 +112,7 @@ class model(AbstractModel.model):
             return fig
 
     def fit(self, nb_generations: int, nb_inds_each_task: int, nb_inds_min = None,
-        lr = 0.1, mu= 0.1,
+        lr = 1, mu= 0.1,
         evaluate_initial_skillFactor = False,
         *args, **kwargs):
         super().fit(*args, **kwargs)
@@ -155,8 +157,11 @@ class model(AbstractModel.model):
         self.history_cost.append([ind.fcost for ind in population.get_solves()])
         self.history_smp.append([M_smp[i].get_smp() for i in range(len(self.tasks))])
         epoch = 1
+        count_while = 0 
 
         while sum(eval_k) <= MAXEVALS:
+            count_while += 1 
+
             turn_eval = 0
 
             # Delta epoch
@@ -201,10 +206,6 @@ class model(AbstractModel.model):
                     
                     oa, ob = self.crossover(pa, pb, skf_pa, skf_pa, population)
 
-                    # dimension strategy
-                    oa = self.dimension_strategy(oa, pb.skill_factor, pa)
-                    ob = self.dimension_strategy(ob, pb.skill_factor, pb if skf_pa == skf_pb else pa)
-
                 else:
                     pa, pb = population.__getIndsTask__(skf_pa, type= 'random', size= 2)
 
@@ -214,7 +215,6 @@ class model(AbstractModel.model):
                     ob = self.mutation(pb, return_newInd= True)
                     ob.skill_factor = skf_pa
 
-                
                 # add oa, ob to offsprings population and eval fcost
                 offsprings.__addIndividual__(oa)
                 offsprings.__addIndividual__(ob)
@@ -234,6 +234,24 @@ class model(AbstractModel.model):
             population = population + offsprings
             population.update_rank()
 
+            # local search 
+            if count_while % 50 == 0 :
+                for skf in range(len(self.tasks)): 
+                    ls = Search.LocalSearch_DSCG()
+                    ls.getInforTasks(self.IndClass, self.tasks, seed = self.seed)
+
+                    best_ind = population[skf].getSolveInd() 
+                    evals, new_ind = ls.search(best_ind, fes= 2000)
+                    eval_k[skf] += evals 
+
+                    if new_ind.fcost < best_ind.fcost: 
+                        idx = int(np.where(population[skf].factorial_rank == 1)[0]) 
+                        population[skf].ls_inds[idx].genes = new_ind.genes 
+                        population[skf].ls_inds[idx].fcost = new_ind.fcost 
+                        population[skf].update_rank() 
+
+                
+
             # selection
             nb_inds_tasks = [int(
                 int(min((nb_inds_min - nb_inds_each_task)/(nb_generations - 1)* (epoch - 1) + nb_inds_each_task, nb_inds_each_task))
@@ -243,7 +261,7 @@ class model(AbstractModel.model):
             # update operators
             self.crossover.update(population = population)
             self.mutation.update(population = population)
-            self.dimension_strategy.update(population = population)
+            self.search.update()
 
             # update smp
             for skf in range(len(self.tasks)):

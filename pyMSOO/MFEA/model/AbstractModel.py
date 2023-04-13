@@ -1,6 +1,6 @@
 from typing import Tuple
 import numpy as np
-from ...utils import Crossover, Mutation, Selection
+from ...utils import Crossover, Mutation, Selection, DimensionAwareStrategy
 from ...utils.EA import *
 import sys
 import matplotlib.pyplot as plt
@@ -68,13 +68,15 @@ class model():
         tasks: List[AbstractTask], 
         crossover: Crossover.AbstractCrossover, 
         mutation: Mutation.AbstractMutation, 
-        selection: Selection.AbstractSelection,
+        dimension_strategy: DimensionAwareStrategy.AbstractDaS = DimensionAwareStrategy.NoDaS(),
+        selection: Selection.AbstractSelection = Selection.ElitismSelection(),
         *args, **kwargs):
     
         self.IndClass = IndClass
         self.tasks = tasks
         self.crossover = crossover
         self.mutation = mutation
+        self.dimension_strategy = dimension_strategy
         self.selection = selection
         
         self.args = args 
@@ -84,9 +86,10 @@ class model():
         self.dim_uss = max([t.dim for t in tasks])
         self.crossover.getInforTasks(IndClass, tasks, seed = self.seed)
         self.mutation.getInforTasks(IndClass, tasks, seed = self.seed)
+        self.dimension_strategy.getInforTasks(IndClass, tasks, seed= self.seed)
         self.selection.getInforTasks(tasks, seed = self.seed)
         
-        # test Ind and task
+        # warmup Ind and task
         test_pop = Population(
             self.IndClass,
             nb_inds_tasks = [10] * len(self.tasks), 
@@ -95,13 +98,16 @@ class model():
             evaluate_initial_skillFactor = True
         )
 
-        # test crossover
+        # warmup crossover
         pa, pb = test_pop.__getRandomInds__(2)
         self.crossover(pa, pb, pa.skill_factor, pb.skill_factor)
 
-        # test mutation
+        # warmup mutation
         self.mutation(pa, return_newInd= True)
         self.mutation(pa, return_newInd= False)
+
+        # warmup dimension_strategy
+        self.dimension_strategy(pa, pb.skill_factor, pb)
 
     def render_process(self,curr_progress, list_desc, list_value, use_sys = False,print_format_e = True,  *args, **kwargs):
         percent = int(curr_progress * 100)

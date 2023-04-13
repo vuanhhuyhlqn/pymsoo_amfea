@@ -225,7 +225,7 @@ class LSHADE_LSA21(AbstractSearch):
         super().__init__()
         self.len_mem = len_mem 
         self.p_ontop = p_ontop 
-        self.archive: list[list[Individual]] = None 
+        self.archive: List[List[Individual]] = None 
         self.arc_rate = 5 
 
         self.first_run = True 
@@ -243,11 +243,11 @@ class LSHADE_LSA21(AbstractSearch):
         self.archive = np.empty(shape= (self.nb_tasks, 0)).tolist() 
 
         # memory of cr and F in epoch
-        self.epoch_M_cr:list[list] = np.empty(shape = (self.nb_tasks, 0)).tolist()
-        self.epoch_M_F: list[list] = np.empty(shape = (self.nb_tasks, 0)).tolist()
+        self.epoch_M_cr:List[list] = np.empty(shape = (self.nb_tasks, 0)).tolist()
+        self.epoch_M_F: List[list] = np.empty(shape = (self.nb_tasks, 0)).tolist()
 
         # memory of delta fcost p and o in epoch
-        self.epoch_M_w: list[list] = np.empty(shape = (self.nb_tasks, 0)).tolist()
+        self.epoch_M_w: List[list] = np.empty(shape = (self.nb_tasks, 0)).tolist()
     
     def __call__(self,ind: Individual, population: Population, *args, **kwargs) -> Individual: 
         super().__call__(*args, **kwargs)
@@ -347,9 +347,9 @@ class LSHADE_LSA21(AbstractSearch):
             
         
         # reset epoch mem
-        self.epoch_M_cr:list[list] = np.empty(shape = (self.nb_tasks, 0)).tolist()
-        self.epoch_M_F: list[list] = np.empty(shape = (self.nb_tasks, 0)).tolist()
-        self.epoch_M_w: list[list] = np.empty(shape = (self.nb_tasks, 0)).tolist()
+        self.epoch_M_cr:List[list] = np.empty(shape = (self.nb_tasks, 0)).tolist()
+        self.epoch_M_F: List[list] = np.empty(shape = (self.nb_tasks, 0)).tolist()
+        self.epoch_M_w: List[list] = np.empty(shape = (self.nb_tasks, 0)).tolist()
 
         # update archive size
         for skf in range(self.nb_tasks): 

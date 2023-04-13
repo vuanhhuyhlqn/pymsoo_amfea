@@ -9,7 +9,7 @@ class DaS_SBX_Crossover(AbstractCrossover):
     '''
     pa, pb in [0, 1]^n
     '''
-    def __init__(self, nc = 2, eta = 3, conf_thres= 0.6):
+    def __init__(self, nc = 2, eta = 3, conf_thres= 1):
         self.nc = nc
         self.eta = eta
         self.conf_thres = conf_thres
