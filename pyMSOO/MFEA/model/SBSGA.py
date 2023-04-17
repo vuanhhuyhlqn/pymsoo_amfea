@@ -4,6 +4,7 @@ import random
 from . import AbstractModel
 from ...utils import Crossover, Mutation, Selection, DimensionAwareStrategy
 from ...utils.EA import *
+from ...utils.numba_utils import numba_randomchoice
 
 class model(AbstractModel.model):
     def compile(self, 
@@ -88,37 +89,34 @@ class model(AbstractModel.model):
                 offsprings += offs
                 copy_offsprings += offs
             
-            # Inter task
-
-            # np.fill_diagonal(self.R, -1)
-            # R_i = np.max(self.R, axis = 1)
-            # task_i = list(np.where(np.random.rand() < R_i)[0])
-            # task_j = list(np.argmax(self.R[task_i], axis = 1))
-            # # S_i = np.min(np.max((R_i[t] * nb_inds_each_task).astype(int), 0), nb_inds_each_task)
-            # S_i = np.clip((R_i[task_i] * nb_inds_each_task).astype(int), 0, nb_inds_each_task)
-            # # print(task_j)
-            # # print(S_i)
-            # S_i = np.clip((R_i[task_i] * nb_inds_each_task).astype(int), 0, nb_inds_each_task)
-            # # subPop[t] = [self.IndClass(off.genes, skill_factor=i, fcost=t(off.genes)) for off in copy_offsprings[task_j][0: S_i]]
-            # # subPop = [[self.IndClass(off.genes, skill_factor=i, fcost=self.tasks[i](off.genes)) for off in copy_offsprings[i][0: S_i[i]]] for i in task_j]
-            # # offsprings[t][nb_inds_each_task - S_i: nb_inds_each_task] = subPop[t]
-            # for i, j in zip(task_i, task_j):
-            #     subPop[i] = [self.IndClass(off.genes, skill_factor=i, fcost=self.tasks[i](off.genes)) for off in copy_offsprings[j][0: S_i[i]]]
-            #     offsprings[i][nb_inds_each_task - S_i[i]: nb_inds_each_task] = subPop[i]
-
+            # Knowledge transfer
             for i, t in enumerate(self.tasks):
                 self.R[i][i] = -1
                 R_i = max(self.R[i])
                 if random.random() < R_i:
-                    current= self.population[i].__getRandomItems__()
+                    
                     task_j = np.argmax(self.R[i])
                     S_i = min(max(int(R_i * nb_inds_each_task), 0), nb_inds_each_task)
                     other_task[i] = task_j
-                    
-                    subPop[i] = [self.dimension_strategy(self.IndClass(off.genes, skill_factor=i, fcost=t(off.genes)), task_j, current) 
+
+                    subPop[i] = [self.dimension_strategy(off, task_j, self.population[i].__getRandomItems__()) 
                                  for off in copy_offsprings[task_j][0: S_i]]
-                    # subPop[i] = []
+                    subPop[i] = [self.IndClass(off.genes, skill_factor=i, fcost = t(off.genes)) for off in subPop[i]]
+                    
                     offsprings[i][nb_inds_each_task - S_i: nb_inds_each_task] = subPop[i]
+                    
+                    # tmp = []
+                    # for k in np.where(copy_offsprings[task_j].factorial_rank <= S_i)[0]:
+                    #     off = copy_offsprings[task_j][k]
+                    #     tmp.append(self.dimension_strategy(off, task_j, self.population[i].__getRandomItems__()))
+                    
+                    # subPop[i] = tmp
+                    # # subPop[i] = [self.dimension_strategy(off, task_j, self.population[i].__getRandomItems__()) 
+                    # #              for off in [copy_offsprings[task_j][k] for k in np.where(copy_offsprings[task_j].factorial_rank < S_i)[0]]]
+                    # subPop[i] = [self.IndClass(off.genes, skill_factor=i, fcost = t(off.genes)) for off in subPop[i]]
+                    
+                    # for idx ,k in enumerate(np.where(offsprings[i].factorial_rank > nb_inds_each_task - S_i)[0]):
+                    #     offsprings[i][k] = subPop[i][idx]
 
             # merge and update rank
             self.population = self.population + offsprings

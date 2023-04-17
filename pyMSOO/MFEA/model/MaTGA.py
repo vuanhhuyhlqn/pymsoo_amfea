@@ -2,7 +2,7 @@ import numpy as np
 import random
 import copy
 from . import AbstractModel
-from ...utils import Crossover, Mutation, Selection
+from ...utils import Crossover, Mutation, Selection, DimensionAwareStrategy
 from ...utils.EA import *
 from ...utils.numba_utils import numba_randomchoice, numba_linalgo_pinv, numba_linalgo_det, numba_dot, numba_randomchoice_w_prob
 
@@ -16,9 +16,10 @@ class model(AbstractModel.model):
                 crossover: Crossover.AbstractCrossover, 
                 mutation: Mutation.AbstractMutation, 
                 selection: Selection.AbstractSelection, 
+                dimension_strategy: DimensionAwareStrategy.AbstractDaS = DimensionAwareStrategy.NoDaS(),
                 *args, 
                 **kwargs):
-        super().compile(IndClass, tasks, crossover, mutation, selection, *args, **kwargs)
+        super().compile(IndClass, tasks, crossover, mutation, dimension_strategy, selection, *args, **kwargs)
         
     def fit(self, 
             nb_generations, 
@@ -81,7 +82,7 @@ class model(AbstractModel.model):
 
         # Roulette wheel probability
         self.probability = np.zeros((len(self.tasks), len(self.tasks)))
-        
+
         for epoch in range(nb_generations):
             
             for t in range(len(self.tasks)):
@@ -139,23 +140,25 @@ class model(AbstractModel.model):
                     tmpS = s
 
                     for i in range(len(self.population[t])):
-                        genes = copy.copy(self.population[t][i].genes)
+                        genes = self.population[t][i].genes.copy()
 
                         k = random.randint(0, self.dim_uss - 1)
                         r1 = numba_randomchoice(len(self.population[t_j]))
                         
                         idx = np.where(np.random.rand(self.dim_uss) < 0.9)[0]
                         
-                        genes[idx] = copy.copy(self.population[t_j][r1].genes[idx])
-                        genes[k] = copy.copy(self.population[t_j][r1].genes[k])
+                        genes[idx] = self.population[t_j][r1].genes[idx].copy()
+                        genes[k] = self.population[t_j][r1].genes[k].copy()
                         
-                        fitness = self.tasks[t](genes)
-                        tmpS = min(tmpS, fitness)
+                        off = self.dimension_strategy(self.IndClass(genes=genes, skill_factor=t), t_j, self.population[t][i])
+                        fcost = self.tasks[t](off)
+                        off.fcost = fcost
+                        tmpS = min(tmpS, fcost)
                         
-                        if (fitness < self.population[t][i].fcost):
-                            off = self.IndClass(genes = genes)
-                            off.skill_factor = t
-                            off.fcost = fitness
+                        if (fcost < self.population[t][i].fcost):
+                            # off = self.IndClass(genes = genes, skill_factor = t, fcost=fitness)
+                            # off.skill_factor = t
+                            # off.fcost = fitness
                             self.population[t][i] = off
                             
                     if (tmpS < s):
@@ -168,6 +171,9 @@ class model(AbstractModel.model):
 
             # Update archive population
             self.update_archives()
+
+            # Update strategy
+            self.dimension_strategy.update(population = self.population)
 
             # save history
             self.history_cost.append([ind.fcost for ind in self.population.get_solves()])
