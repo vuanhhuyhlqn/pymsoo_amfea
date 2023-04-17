@@ -1,0 +1,2 @@
+docker run -v /home/anhdt-minhdt/Code/docker/pyMSOO/run.sh:/workspace/run.sh \
+           -v /home/anhdt-minhdt/Code/docker/pyMSOO/RESULTS:/workspace/RESULTS/ pymsoo:lastest

@@ -1,6 +1,14 @@
+# Install env 
 FROM python:3.9 
 COPY requirements.txt /workspace/requirements.txt
 WORKDIR /workspace/ 
 RUN pip install -r requirements.txt 
 
-CMD echo 'helloworld'
+# Copy lib 
+COPY pyMSOO /workspace/pyMSOO
+# COPY run.py /workspace/run.py
+COPY run.sh /workspace/run.sh 
+
+CMD bash run.sh 
+
+# CMD echo 'helloworld'

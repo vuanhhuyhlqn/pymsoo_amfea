@@ -16,5 +16,5 @@ save_path: "./RESULTS/"
 
 name_benchmark: WCCI22
 number_tasks: 50
-ls_id_run: "-1-1-1"
+ls_id_run: "1-1-1"
 

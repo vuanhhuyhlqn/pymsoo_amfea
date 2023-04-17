@@ -65,7 +65,7 @@ def main():
     ls_benchmark, ls_IndClass, name_benchmark = getattr(benchmark_cfg.config, f'{args.name_benchmark}_{args.number_tasks}')() 
 
     # process custom id run 
-    if args.ls_id_run != "-1-1-1":
+    if args.ls_id_run != "1-1-1":
         print(args.ls_id_run)
         ls_id_tasks = args.ls_id_run.split("-") 
         ls_benchmark = [ls_benchmark[int(i)] for i in ls_id_tasks]
