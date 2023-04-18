@@ -39,7 +39,7 @@ def add_argument():
     global parser 
     default_params = {} 
 
-    with open("pyMSOO/RunModel/config/SM_MFEA_SBX_cfg.yaml", encoding='utf-8') as file:
+    with open("cfg.yaml", encoding='utf-8') as file:
         default_params.update(yaml.load(file, Loader= yaml.Loader))
 
     for key, value in default_params.items():
@@ -48,10 +48,6 @@ def add_argument():
             default= value,
             type= type(value), 
         )
-    
-
-    
-
 
 add_argument()
 

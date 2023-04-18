@@ -6,7 +6,6 @@ RUN pip install -r requirements.txt
 
 # Copy lib 
 COPY pyMSOO /workspace/pyMSOO
-# COPY run.py /workspace/run.py
 COPY run.sh /workspace/run.sh 
 
 CMD bash run.sh 
