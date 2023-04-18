@@ -1,0 +1,1 @@
+from . import SM_MFEA_Competition 

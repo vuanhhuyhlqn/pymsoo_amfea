@@ -183,10 +183,12 @@ class model(AbstractModel.model):
 
                         best_ind = population[skf].getSolveInd() 
                         evals, new_ind = ls.search(best_ind, fes=2000)
+                        eval_k[skf] += evals 
                         if new_ind.fcost < best_ind.fcost: 
                             idx = int(np.where(population[skf].factorial_rank == 1)[0])
                             population[skf].ls_inds[idx].genes = new_ind.genes 
                             population[skf].ls_inds[idx].fcost = new_ind.fcost 
+                            population.update_rank()  
 
                 # selection
                 nb_inds_tasks = [int(
