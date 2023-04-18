@@ -20,8 +20,12 @@ A library that includes utilities for using and upgrading versions of the MFEA.
   All in file requirement.yml
 
 ## Usage
-
-
+### Run docker tutorial 
+- Create folder that contain 2 files: **run.py** to run code, **cfg.yaml** contains config parameter (see MFEA_DaS, SM_MFEA_SBX). Name folder is name of algorithms.
+- Use: `docker build -t pymsoo:lastest . ` to build images docker 
+- In file **run.sh**, change `MODEL` value to name of folder created
+- In file **run_docker.txt**, change path `LOCAL_SAVE_PATH` and `DOCKER_SAVE_PATH` to the path want to save.  
+- Copy all line in file **run_docker.txt** and paste to cmd and run
 ## Project Status
 The project is in process of update and fix
 
