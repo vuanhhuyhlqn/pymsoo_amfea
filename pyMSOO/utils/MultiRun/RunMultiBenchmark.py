@@ -1,5 +1,7 @@
-from .RunMultiTime import MultiTimeModel 
+from pyMSOO.utils.MultiRun.RunMultiTime import MultiTimeModel 
 from ...MFEA.model import AbstractModel
+import pickle
+
 
 class MultiBenchmark(): 
     def __init__(self, ls_benchmark = [], name_benchmark = [], ls_IndClass = [], model : AbstractModel= None) :
@@ -23,6 +25,7 @@ class MultiBenchmark():
             self.compile_kwargs['IndClass'] = self.ls_IndClass[idx] 
 
             model = MultiTimeModel(model = self.model) 
+            model.__class__ = MultiTimeModel 
             model.compile(**self.compile_kwargs) 
             model.fit(**self.fit_kwargs) 
             model.run(nb_run = nb_run, save_path= save_path + str(self.ls_name_benchmark[idx]) + ".mso") 
