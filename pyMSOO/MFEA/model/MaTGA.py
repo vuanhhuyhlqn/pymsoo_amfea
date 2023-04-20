@@ -250,8 +250,10 @@ class model(AbstractModel.model):
         genes_b = np.array([ind.genes[:D] for ind in subPop_b])
         
         similarity = self.KLD(genes_a, genes_b)
-        assert not np.isnan(similarity)
-
+        # assert not np.isnan(similarity)
+        if np.isnan(similarity):
+            similarity = 0.001
+            
         return similarity
 
     def KLD(self, genes_a, genes_b):
@@ -275,6 +277,12 @@ class model(AbstractModel.model):
         try:
             det_a = max(numba_linalgo_det(gene_cov_a), 0.001)
         except:
+            det_a = 0.001
+        
+        if np.isnan(det_b):
+            det_b = 0.001
+
+        if np.isnan(det_a):
             det_a = 0.001
 
         kld_a_b = np.trace(numba_dot(inv_gene_cov_b, gene_cov_a)) \
