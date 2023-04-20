@@ -1,0 +1,4 @@
+LOCAL_SAVE_PATH=`pwd`/RESULTS
+DOCKER_SAVE_PATH=/workspace/RESULTS/
+docker run -v `pwd`/run.sh:/workspace/run.sh \
+           -v $LOCAL_SAVE_PATH:$DOCKER_SAVE_PATH pymsoo:lastest
