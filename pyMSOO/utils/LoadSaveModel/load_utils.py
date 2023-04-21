@@ -67,9 +67,9 @@ def loadModelFromTxt(source_path, \
                      model_algorithm, \
                     multitime_model_class, 
                     target_path = "./", \
-                    remove_tasks: bool = False, \
                     history_cost_shape= (1000, 2), \
                     nb_runs = 1, ls_tasks = [], 
+                    remove_tasks: bool = False, \
                     name_model = None, 
                     total_time= None ):
     '''
@@ -108,22 +108,23 @@ def loadModelFromTxt(source_path, \
     assert avg_history_cost.shape == history_cost_shape 
 
 
-    mutiltime_model = multitime_model_class(model_algorithm) 
-    mutiltime_model.compile()
-    mutiltime_model.tasks = None 
-    mutiltime_model.history_cost = avg_history_cost
-    mutiltime_model.nb_run = nb_runs 
+    multitime_model = multitime_model_class(model_algorithm) 
+    multitime_model.__class__ = multitime_model_class
+    multitime_model.compile()
+    multitime_model.tasks = None 
+    multitime_model.history_cost = avg_history_cost
+    multitime_model.nb_run = nb_runs 
 
     for run in range(nb_runs): 
         new_model = model_algorithm.model() 
         new_model.history_cost = history_cost[run] 
-        mutiltime_model.ls_model.append(new_model)
+        multitime_model.ls_model.append(new_model)
     if name_model is None:
         name_model = source_path.split("/")[-1].split(".")[0]
     
     if os.path.isdir(target_path) is False: 
         os.makedirs(target_path) 
     
-    return mutiltime_model
+    return multitime_model
     # return saveModel(model= mutiltime_model, PATH= f"{target_path}/{name_model}.mso", remove_tasks= remove_tasks, total_time= total_time) 
 

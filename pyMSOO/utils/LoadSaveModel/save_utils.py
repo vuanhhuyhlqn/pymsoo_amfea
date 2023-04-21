@@ -128,20 +128,19 @@ def saveModel(model, PATH: str, remove_tasks=True, total_time = None ):
 
     return 'Saved'
 
-
-
 def export_history2txt(save_path= "./Complex/", \
                 source_path = "./RESULTS/COMPLEX/SMP_v2/", \
                 prefix_name = "MTOSOO_P",\
                 ls_tasks =  WCCI22_benchmark.get_complex_benchmark(1)[0],
                 total_evals = int(100000 * 2), 
                 steps = 1000, 
+                load_func = loadModel
                 ):
     '''
     Export history cost of a all files in a folder to .txt files that has format of CEC competition
     '''
     for each_name_model in os.listdir(os.path.join(source_path)):
-        model = loadModel(os.path.join(source_path, each_name_model), ls_tasks) 
+        model = load_func(os.path.join(source_path, each_name_model), ls_tasks) 
         
         tmp = np.concatenate([model.ls_model[i].history_cost for i in range(len(model.ls_model))], axis=1)
         stt = np.arange(total_evals // steps, total_evals + total_evals // steps, total_evals // steps)
