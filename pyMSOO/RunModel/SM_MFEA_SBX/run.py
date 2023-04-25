@@ -69,27 +69,26 @@ def main():
         name_benchmark = [name_benchmark[int(i)] for i in ls_id_tasks]
     
 
-    mfeaModel = MultiBenchmark(
+    smpModel = MultiBenchmark(
         ls_benchmark= ls_benchmark,
         name_benchmark= name_benchmark,
         ls_IndClass= ls_IndClass,
-        model= MFEA_base
+        model= SM_MFEA
     )
 
-    mfeaModel.compile( 
+    smpModel.compile( 
         crossover= SBX_Crossover(nc = args.nc),
         mutation= PolynomialMutation(nm = args.nm),
         dimension_strategy= DaS_strategy(eta= args.eta),
+        search = DifferentialEvolution.LSHADE_LSA21(p_ontop= args.p_ontop, len_mem= args.len_mem),
         selection = ElitismSelection()
     )
-    mfeaModel.fit(
-        nb_generations= args.nb_generations, 
-        rmp = args.rmp, 
-        nb_inds_each_task= args.nb_inds_each_task,
-        bound_pop = [0, 1],
+    smpModel.fit(
+        nb_generations= args.nb_generations, nb_inds_each_task= args.nb_inds_each_task, nb_inds_min= args.nb_inds_min,
+        lr = args.lr ,mu= args.mu,
         evaluate_initial_skillFactor= args.evaluate_initial_skillFactor 
     )
-    a = mfeaModel.run(
+    a = smpModel.run(
         nb_run= args.nb_run,     
         save_path= args.save_path
     )

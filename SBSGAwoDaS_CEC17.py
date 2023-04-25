@@ -12,8 +12,10 @@ from pyMSOO.utils.Crossover import *
 from pyMSOO.utils.Mutation import *
 from pyMSOO.utils.Selection import *
 from pyMSOO.utils.Search import * 
+from pyMSOO.utils.DimensionAwareStrategy import *
 from pyMSOO.MFEA.benchmark.continous import *
-from pyMSOO.utils.MultiRun.RunMultiTime import * 
+from pyMSOO.utils.MultiRun.RunMultiTime import *
+from pyMSOO.utils.MultiRun.RunMultiBenchmark import *
 
 from pyMSOO.utils.EA import * 
 from pyMSOO.MFEA.benchmark.continous.CEC17 import CEC17_benchmark 
@@ -48,16 +50,20 @@ name_benchmark = []
 
 tasks, IndClass = CEC17_benchmark.get_10tasks_benchmark()
 
-smpModel = MultiTimeModel(
-    model= SBSGA
-)
+# smpModel = MultiTimeModel(
+#     model= SBSGA
+# )
+
+smpModel = MultiBenchmark(model= SBSGA, ls_benchmark=[tasks], ls_IndClass=[IndClass], name_benchmark = ['CEC17'])
 
 smpModel.compile(
-    IndClass= IndClass,
-    tasks= tasks,
+    IndClass= [IndClass],
+    tasks= [tasks],
+    # crossover = KL_SBXCrossover(nc= 2, k= 100, conf_thres= 1),
     crossover= SBX_Crossover(nc = 2),
     mutation= PolynomialMutation(nm = 5),
     selection= ElitismSelection(),
+    dimension_strategy= NoDaS(),
 )
 smpModel.fit(
     nb_generations = 1000,nb_inds_each_task= 100, 
@@ -65,7 +71,7 @@ smpModel.fit(
 )
 a = smpModel.run(
     nb_run= 30,
-    save_path= './RESULTS/CEC17/SBSGA_wo_DaS.mso'
+    save_path= './RESULTS/CEC17/SBSGA_wo_DaS'
 )
 
 # smpModel = MultiBenchmark(

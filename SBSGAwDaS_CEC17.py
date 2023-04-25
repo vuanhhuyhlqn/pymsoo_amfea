@@ -49,8 +49,14 @@ name_benchmark = []
 
 tasks, IndClass = CEC17_benchmark.get_10tasks_benchmark()
 
-smpModel = MultiTimeModel(
-    model= SBSGA
+# smpModel = MultiTimeModel(
+#     model= SBSGA
+# )
+smpModel = MultiBenchmark(
+    model = SBSGA,
+    ls_benchmark = [tasks],
+    ls_IndClass = [IndClass],
+    name_benchmark = ['CEC17']
 )
 
 smpModel.compile(
