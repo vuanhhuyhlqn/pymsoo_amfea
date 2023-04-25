@@ -30,9 +30,9 @@ class Individual:
     + `skill_factor`: skill factor of the individual\n
     + `fcost`: factorial cost of the individual for skill_factor
     '''
-    def __init__(self, genes,  parent= None, dim= None, *args, **kwargs) -> None: 
-        self.skill_factor: int = None
-        self.fcost: float = None
+    def __init__(self, genes, skill_factor = None, fcost = None, parent= None, dim= None, *args, **kwargs) -> None: 
+        self.skill_factor: int = skill_factor
+        self.fcost: float = fcost
         self.genes: np.ndarray = genes
         self.parent: Individual = parent
 
@@ -136,6 +136,26 @@ class SubPopulation:
     def __len__(self): 
         return len(self.ls_inds)
 
+    #TODO: Check logic and optimize this function
+    def __setitem__(self, index, value):
+        try:
+            self.ls_inds[index] = value
+        except:
+            if isinstance(index, int):
+                self.ls_inds[index] = value
+            elif isinstance(index, list):
+                # print(len(self.ls_inds), len(value), len(index))
+                for i, x in enumerate(index):
+                    if x >= len(self):
+                        raise ValueError("Out of bound")
+                    
+                    self.ls_inds[x] = value[i]
+            elif isinstance(index, slice):
+                print(index)
+                self.ls_inds[index] = value
+            else:
+                raise TypeError('Int, Slice or List[int], not ' + str(type(index)))
+
     def __getitem__(self, index):
         try:
             return self.ls_inds[index]
@@ -236,6 +256,9 @@ class SubPopulation:
             if e is ind:
                 return idx
         raise ValueError(str(ind) + "is not in subPop")
+    
+    def getFitness(self):
+        return [ind.fcost for ind in self.ls_inds]
 
 class Population:
     def __init__(self, IndClass: Type[Individual], dim, nb_inds_tasks: List[int], list_tasks:List[AbstractTask] = [], 
@@ -301,7 +324,13 @@ class Population:
         return sum([len(subPop) for subPop in self.ls_subPop])
 
     def __getitem__(self, index) -> SubPopulation:
-        return self.ls_subPop[index]
+        try:
+            return self.ls_subPop[index]
+        except:
+            if isinstance(index, int):
+                return self.ls_subPop[index]
+            elif isinstance(index, list):
+                return [self.ls_subPop[i] for i in index]
 
     def __getIndsTask__(self, idx_task, size: int = None, replace: bool = False, type:str = 'random', tournament_size= 2,  
         p_ontop = None,

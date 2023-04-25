@@ -1,5 +1,5 @@
 import numpy as np
-from ....utils.EA import AbstractTask
+from ....utils.EA import AbstractTask, Individual
 from numba import jit
 from numba.typed import Dict
 
@@ -59,7 +59,18 @@ class AbstractFunc(AbstractTask):
         x_decode = rotation_matrix @ (x_decode - shift) 
         return x_decode 
 
+    @staticmethod
+    def _convert(x):
+        if isinstance(x, np.ndarray):
+            return x
+
+        if isinstance(x, Individual):
+            return x.genes
+        
+        raise ValueError("Wrong value type for input argument, expected 'np.ndarray' or 'Individual' but got {}".format(type(x)))
+
     def __call__(self, x):
+        x = self.__class__._convert(x)
         x = self.__class__.decode(x, self.dim, self.limited_space, self.bound, self.rotation_matrix, self.shift)
         return self.__class__._func(x)
 
@@ -113,6 +124,7 @@ class Weierstrass(AbstractFunc):
         return left - right
 
     def __call__(self, x):
+        x = self.__class__._convert(x)
         x = self.__class__.decode(x, self.dim, self.limited_space, self.bound, self.rotation_matrix, self.shift)
         return __class__._func(x,self.dim, self.params)
 
@@ -148,6 +160,7 @@ class Ackley(AbstractFunc):
             + np.exp(1)
 
     def __call__(self, x):
+        x = self.__class__._convert(x)
         x = self.__class__.decode(x, self.dim, self.limited_space, self.bound, self.rotation_matrix, self.shift)
         return __class__._func(x, self.fixed, self.params)
 
@@ -190,6 +203,7 @@ class Schwefel(AbstractFunc):
             return 418.9829 * dim - np.sum(x * np.sin(np.sqrt(np.abs(x)))) 
     
     def __call__(self, x):
+        x = self.__class__._convert(x)
         x =   self.__class__.decode(x, self.dim, self.limited_space, self.bound, self.rotation_matrix, self.shift)
         return __class__._func(x, self.dim, self.fixed)
 
@@ -209,6 +223,7 @@ class Griewank(AbstractFunc):
             + 1
 
     def __call__(self, x):
+        x = self.__class__._convert(x)
         x =   self.__class__.decode(x, self.dim, self.limited_space, self.bound, self.rotation_matrix, self.shift)
         return __class__._func(x, self.dim)
 
@@ -226,6 +241,7 @@ class Rastrigin(AbstractFunc):
         return 10 * dim + np.sum(x ** 2 - 10 * np.cos(2 * np.pi * x))
     
     def __call__(self, x):
+        x = self.__class__._convert(x)
         x =   self.__class__.decode(x, self.dim, self.limited_space, self.bound, self.rotation_matrix, self.shift)
         return __class__._func(x, self.dim)
         

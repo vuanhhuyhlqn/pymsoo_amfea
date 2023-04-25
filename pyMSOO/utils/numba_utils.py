@@ -33,3 +33,15 @@ def numba_random_cauchy(mean, sigma=0.1):
 @jit(nopython=True)
 def numba_clip(array, low, high):
     return np.clip(array, low, high)
+
+@jit(nopython = True)
+def numba_linalgo_det(matrix):
+    return np.linalg.det(matrix)
+
+@jit(nopython = True)
+def numba_linalgo_pinv(matrix):
+    return np.linalg.pinv(matrix)
+
+@jit(nopython = True)
+def numba_dot(a, b):
+    return np.dot(a, b)
