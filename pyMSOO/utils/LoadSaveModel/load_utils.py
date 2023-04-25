@@ -94,8 +94,8 @@ def loadModelFromTxt(source_path, \
     assert len(ls_tasks) > 0 
     data = pd.read_csv(source_path, header= None) 
     # data = pd.read_csv(source_path, header= None, delim_whitespace= True).astype("float") 
-    history_cost_shape = (data.shape[0], (data.shape[1] - 1) // nb_runs)
-    
+    history_cost_shape = (data.shape[0], len(ls_tasks))
+    nb_runs = (data.shape[1] - 1) // len(ls_tasks)
     history_cost = np.zeros(shape = (nb_runs,history_cost_shape[0], history_cost_shape[1]))
     data_transpose = data.transpose() 
     count_row = 1
