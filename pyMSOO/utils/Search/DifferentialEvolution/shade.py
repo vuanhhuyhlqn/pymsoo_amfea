@@ -248,6 +248,8 @@ class LSHADE_LSA21(AbstractSearch):
 
         # memory of delta fcost p and o in epoch
         self.epoch_M_w: List[list] = np.empty(shape = (self.nb_tasks, 0)).tolist()
+
+        return self
     
     def __call__(self,ind: Individual, population: Population, *args, **kwargs) -> Individual: 
         super().__call__(*args, **kwargs)
