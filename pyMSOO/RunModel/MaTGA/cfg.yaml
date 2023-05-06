@@ -1,6 +1,6 @@
 nc: 2
 nm: 5 
-eta: 3 
+# eta: 3 
 
 nb_generations: 1000 
 nb_inds_each_task: 100 

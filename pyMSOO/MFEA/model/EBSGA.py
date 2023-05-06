@@ -31,10 +31,15 @@ class model(AbstractModel.model):
             evaluate_initial_skillFactor = evaluate_initial_skillFactor
         )
 
-        self.R_o = np.zeros((len(self.tasks))) 
-        self.R_s = np.zeros((len(self.tasks)))
-        self.E_o = np.zeros((len(self.tasks)))
-        self.E_s = np.zeros((len(self.tasks)))
+        self.R_o = np.random.rand((len(self.tasks))) 
+        self.R_s = np.random.rand((len(self.tasks)))
+        self.E_o = np.random.rand((len(self.tasks)))
+        self.E_s = np.random.rand((len(self.tasks)))
+
+        # self.R_o = np.zeros((len(self.tasks))) 
+        # self.R_s = np.zeros((len(self.tasks)))
+        # self.E_o = np.zeros((len(self.tasks)))
+        # self.E_s = np.zeros((len(self.tasks)))
 
         # save history
         self.history_cost.append([ind.fcost for ind in population.get_solves()])
@@ -59,21 +64,18 @@ class model(AbstractModel.model):
             # start = time.time()
 
             for i in idx_other:
-                # self.E_o[i] += nb_inds_each_task
                 offs = population.__getRandomInds__(nb_inds_each_task)
-                # res = np.fromiter(map(self.tasks[i].__call__, offs), float)
-                # self.R_o[i] += sum(res < population[i].__getBestIndividual__.fcost)
                 current_best = population[i].__getBestIndividual__.fcost
                 for o in offs:
-                    self.R_o[i] += self.tasks[i](o) < current_best
-                    offsprings.__addIndividual__(o)
-            
+                    j = o.skill_factor
+                    off = self.dimension_strategy(o, j, population[i].__getRandomItems__())
+                    fcost = self.tasks[i](off)
+                    self.R_o[i] += fcost < current_best
+                    offsprings.__addIndividual__(self.IndClass(genes = off.genes, skill_factor = i))
+
             for i in idx_same:
                 current_best = population[i].__getBestIndividual__.fcost
-                # self.E_s[i] += nb_inds_each_task
                 offs = []
-                cnt = 0
-                
                 while len(offs) < nb_inds_each_task:
                     # choose parent 
                     pa, pb = population[i].__getRandomItems__(2)
@@ -112,6 +114,7 @@ class model(AbstractModel.model):
             # update operators
             self.crossover.update(population = population)
             self.mutation.update(population = population)
+            self.dimension_strategy.update(population = population)
 
             # save history
             self.history_cost.append([ind.fcost for ind in population.get_solves()])
