@@ -54,12 +54,23 @@ class model(AbstractModel.model):
         tasks: List[AbstractTask], 
         crossover: Crossover.SBX_Crossover, 
         mutation: Mutation.PolynomialMutation, 
+<<<<<<< HEAD
         search,
         selection: Selection.ElitismSelection, 
+=======
+        search: Search.DifferentialEvolution.LSHADE_LSA21,
+        dimension_strategy: DimensionAwareStrategy.AbstractDaS = DimensionAwareStrategy.NoDaS(),
+        selection: Selection.AbstractSelection= Selection.ElitismSelection(), 
+        # multi_parent = Crossover.new_DaS_SBX_Crossover(),
+>>>>>>> f8b05d9 (fix multitimemodel)
         *args, **kwargs):
         super().compile(IndClass, tasks, crossover, mutation, selection, *args, **kwargs)
         self.search = search
         self.search.getInforTasks(IndClass, tasks, seed = self.seed)
+
+        # self.multi_parent_crossover = multi_parent 
+        # self.multi_parent_crossover.getInforTasks(IndClass, tasks, self.seed)
+
 
     def render_smp(self,  shape = None, title = None, figsize = None, dpi = 100, step = 1, re_fig = False, label_shape= None, label_loc= None):
         
@@ -196,7 +207,49 @@ class model(AbstractModel.model):
 
                 if skf_pb != len(self.tasks):
                     if skf_pa == skf_pb:
+<<<<<<< HEAD
                         pa, pb = population[skf_pa].__getRandomItems__(size= 2, replace=False)
+=======
+
+                        pa = population[skf_pa][idx_ind]
+                        pb = population[skf_pa].__getRandomItems__() 
+                        if np.all(pb.genes == pa.genes): 
+                            pb = population[skf_pa].__getWorstIndividual__
+
+                        # TM-ANCHOR: intra-crossover: replace SBX-Crossover by LSHADE
+                        oa = self.search(pa, population)
+                        if oa is None:
+                            oa, _ = self.crossover(pa, pb, skf_pa, skf_pa, population)
+                        # ob = self.search(pb, population)
+                        
+                        _, ob = self.crossover(pa, pb, skf_pa, skf_pa, population)
+
+                        offsprings.__addIndividual__(oa)
+                        offsprings.__addIndividual__(ob)
+
+
+                        count_Delta[skf_pa][skf_pb] += 2
+                        eval_k[skf_pa] += 2
+                        turn_eval += 2
+
+                        Delta1 = (pa.fcost - oa.fcost) / (pa.fcost ** 2 + 1e-50)
+                        Delta[skf_pa][skf_pb] += max([Delta1, 0])**2
+
+                        Delta2 = (pa.fcost - ob.fcost) / (pa.fcost ** 2 + 1e-50) 
+                        Delta[skf_pa][skf_pb] += max([Delta2, 0]) ** 2 
+
+                        if oa.fcost < pa.fcost: 
+                            population[skf_pa][idx_ind].fcost = oa.fcost 
+                            population[skf_pa][idx_ind].genes = oa.genes  
+                        
+                        elif ob.fcost < population[skf_pa][idx_ind].fcost: 
+                            population[skf_pa][idx_ind].fcost = ob.fcost
+                            population[skf_pa][idx_ind].genes = ob.genes 
+                        else:
+                            offsprings.__addIndividual__(population[skf_pa].__copyIndividual__(pa))
+
+
+>>>>>>> f8b05d9 (fix multitimemodel)
                     else:
                         pa = population[skf_pa].__getRandomItems__()
                         pb = population[skf_pb].__getRandomItems__()
