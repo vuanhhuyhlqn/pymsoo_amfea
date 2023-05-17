@@ -175,7 +175,7 @@ class CompareModel():
                     count_benchmark = benchmark_mso.split(".")[0]
                     count_benchmark = count_benchmark.split("_")[-1]
                     count_benchmark = int(count_benchmark) - 1
-
+                    print(path_algo, benchmark_mso)
                     model = loadModel(os.path.join(
                         path_algo, benchmark_mso), ls_benchmark[count_benchmark])
 
