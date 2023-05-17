@@ -4,7 +4,7 @@ from ...MFEA.model import AbstractModel
 import os
 import pandas as pd
 from typing import List, Tuple
-from ..LoadSaveModel import loadModel
+from ..LoadSaveModel.load_utils import loadModel
 import matplotlib 
 
 class CompareModel():
