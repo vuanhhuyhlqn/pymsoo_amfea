@@ -4,7 +4,7 @@ from numba import jit
 import random
 
 from ...utils.EA import *
-from ...utils import Crossover, Mutation, Selection, Search
+from ...utils import Crossover, Mutation, DimensionAwareStrategy, Selection, Search
 from ...utils.Search.DifferentialEvolution.shade import * 
 from ..model import AbstractModel
 from ...utils.numba_utils import numba_randomchoice_w_prob
@@ -54,18 +54,13 @@ class model(AbstractModel.model):
         tasks: List[AbstractTask], 
         crossover: Crossover.SBX_Crossover, 
         mutation: Mutation.PolynomialMutation, 
-<<<<<<< HEAD
-        search,
-        selection: Selection.ElitismSelection, 
-=======
         search: Search.DifferentialEvolution.LSHADE_LSA21,
         dimension_strategy: DimensionAwareStrategy.AbstractDaS = DimensionAwareStrategy.NoDaS(),
         selection: Selection.AbstractSelection= Selection.ElitismSelection(), 
         # multi_parent = Crossover.new_DaS_SBX_Crossover(),
->>>>>>> f8b05d9 (fix multitimemodel)
         *args, **kwargs):
-        super().compile(IndClass, tasks, crossover, mutation, selection, *args, **kwargs)
-        self.search = search
+        super().compile(IndClass, tasks, crossover, mutation, dimension_strategy, selection, *args, **kwargs)
+        self.search = search 
         self.search.getInforTasks(IndClass, tasks, seed = self.seed)
 
         # self.multi_parent_crossover = multi_parent 
@@ -122,10 +117,12 @@ class model(AbstractModel.model):
         if re_fig:
             return fig
 
-    def fit(self, nb_generations: int, nb_inds_each_task: int, nb_inds_min = None,
-        lr = 1, mu= 0.1,
-        evaluate_initial_skillFactor = False,
-        *args, **kwargs):
+    def fit(self, nb_generations: int, \
+            nb_inds_each_task: int, nb_inds_min = None,
+            lr = 0.1, mu= 0.1,
+            evaluate_initial_skillFactor = False,
+            local_search = True, 
+            *args, **kwargs):
         super().fit(*args, **kwargs)
         
         # nb_inds_min
@@ -168,12 +165,11 @@ class model(AbstractModel.model):
         self.history_cost.append([ind.fcost for ind in population.get_solves()])
         self.history_smp.append([M_smp[i].get_smp() for i in range(len(self.tasks))])
         epoch = 1
-        count_while = 0 
+        count_loop =1
 
         while sum(eval_k) <= MAXEVALS:
-            count_while += 1 
-
             turn_eval = 0
+            count_loop += 1 
 
             # Delta epoch
             Delta:List[List[float]] = np.zeros((len(self.tasks), len(self.tasks) + 1)).tolist()
@@ -187,7 +183,12 @@ class model(AbstractModel.model):
                 list_tasks= self.tasks,
             )
 
-            while turn_eval < sum(nb_inds_tasks):
+            ls_idx = np.arange(sum(nb_inds_tasks)) 
+            np.random.shuffle(ls_idx) 
+            for idx_ind_task in ls_idx: 
+                idx_ind = idx_ind_task % nb_inds_tasks[0] 
+                idx_task = idx_ind_task // nb_inds_tasks[0]
+
                 if sum(eval_k) >= epoch * nb_inds_each_task * len(self.tasks):
                     # save history
                     self.history_cost.append([ind.fcost for ind in population.get_solves()])
@@ -195,21 +196,15 @@ class model(AbstractModel.model):
 
                     self.render_process(epoch/nb_generations, ['Pop_size', 'Cost'], [[len(population)], self.history_cost[-1]], use_sys= True)
                     epoch += 1
+                
+                skf_pa = idx_task 
 
-                # choose subpop of father pa
-                skf_pa = numba_randomchoice_w_prob(p_choose_father)
-
-                # get smp 
                 smp = M_smp[skf_pa].get_smp()
 
-                # choose subpop of mother pb
                 skf_pb = numba_randomchoice_w_prob(smp)
 
                 if skf_pb != len(self.tasks):
                     if skf_pa == skf_pb:
-<<<<<<< HEAD
-                        pa, pb = population[skf_pa].__getRandomItems__(size= 2, replace=False)
-=======
 
                         pa = population[skf_pa][idx_ind]
                         pb = population[skf_pa].__getRandomItems__() 
@@ -249,61 +244,105 @@ class model(AbstractModel.model):
                             offsprings.__addIndividual__(population[skf_pa].__copyIndividual__(pa))
 
 
->>>>>>> f8b05d9 (fix multitimemodel)
                     else:
-                        pa = population[skf_pa].__getRandomItems__()
+                        pa = population[skf_pa][idx_ind]
                         pb = population[skf_pb].__getRandomItems__()
 
-                    if np.all(pa.genes == pb.genes):
-                        pb = population[skf_pb].__getWorstIndividual__
-                    
-                    oa, ob = self.crossover(pa, pb, skf_pa, skf_pa, population)
+                        if np.all(pa.genes == pb.genes):
+                            pb = population[skf_pb].__getWorstIndividual__
+                        
+                        oa, ob = self.crossover(pa, pb, skf_pa, skf_pa, population)
+
+                        # dimension strategy
+                        oa = self.dimension_strategy(oa, pb.skill_factor, pa)
+                        ob = self.dimension_strategy(ob, pb.skill_factor, pb if skf_pa == skf_pb else pa)
+                        
+                        # add oa, ob to offsprings population and eval fcost
+                        offsprings.__addIndividual__(oa)
+                        offsprings.__addIndividual__(ob)
+                        offsprings.__addIndividual__(population[skf_pa].__copyIndividual__(pa))
+
+                        count_Delta[skf_pa][skf_pb] += 2
+                        eval_k[skf_pa] += 2
+                        turn_eval += 2
+
+                        # Calculate the maximum improvement percetage
+                        Delta1 = (pa.fcost - oa.fcost) / (pa.fcost ** 2 + 1e-50)
+                        Delta2 = (pa.fcost - ob.fcost) / (pa.fcost ** 2 + 1e-50)
+
+                        Delta[skf_pa][skf_pb] += max([Delta1, 0])**2
+                        Delta[skf_pa][skf_pb] += max([Delta2, 0])**2
+
+                        if oa.fcost < pa.fcost: 
+                            population[skf_pa][idx_ind].genes = oa.genes 
+                            population[skf_pa][idx_ind].fcost = oa.fcost 
+                        
+                        if ob.fcost < population[skf_pa][idx_ind].fcost: 
+                            population[skf_pa][idx_ind].genes = ob.genes 
+                            population[skf_pa][idx_ind].fcost = ob.fcost 
 
                 else:
-                    pa, pb = population.__getIndsTask__(skf_pa, type= 'random', size= 2)
+                    pa= population[skf_pa][idx_ind]
+
+                    pb = population[skf_pa].__getRandomItems__() 
+                    if np.all(pb.genes == pa.genes): 
+                        pb = population[skf_pa].__getWorstIndividual__
 
                     oa = self.mutation(pa, return_newInd= True)
                     oa.skill_factor = skf_pa
 
-                    ob = self.mutation(pb, return_newInd= True)
-                    ob.skill_factor = skf_pa
+                    ob = self.mutation(pb, return_newInd= True) 
+                    ob.skill_factor = skf_pa 
 
-                # add oa, ob to offsprings population and eval fcost
-                offsprings.__addIndividual__(oa)
-                offsprings.__addIndividual__(ob)
-
-                count_Delta[skf_pa][skf_pb] += 2
-                eval_k[skf_pa] += 2
-                turn_eval += 2
-
-                # Calculate the maximum improvement percetage
-                Delta1 = (pa.fcost - oa.fcost) / (pa.fcost ** 2 + 1e-50)
-                Delta2 = (pa.fcost - ob.fcost) / (pa.fcost ** 2 + 1e-50)
-
-                Delta[skf_pa][skf_pb] += max([Delta1, 0])**2
-                Delta[skf_pa][skf_pb] += max([Delta2, 0])**2
-
-            # merge
-            population = population + offsprings
-            population.update_rank()
-
-            # local search 
-            if count_while % 50 == 0 :
-                for skf in range(len(self.tasks)): 
-                    ls = Search.LocalSearch_DSCG()
-                    ls.getInforTasks(self.IndClass, self.tasks, seed = self.seed)
-
-                    best_ind = population[skf].getSolveInd() 
-                    evals, new_ind = ls.search(best_ind, fes= 2000)
-                    eval_k[skf] += evals 
-
-                    if new_ind.fcost < best_ind.fcost: 
-                        idx = int(np.where(population[skf].factorial_rank == 1)[0]) 
-                        population[skf].ls_inds[idx].genes = new_ind.genes 
-                        population[skf].ls_inds[idx].fcost = new_ind.fcost 
-                        population[skf].update_rank() 
 
                 
+                    # add oa, ob to offsprings population and eval fcost
+                    offsprings.__addIndividual__(oa)
+                    offsprings.__addIndividual__(population[skf_pa].__copyIndividual__(pa))
+                    offsprings.__addIndividual__(ob) 
+
+                    count_Delta[skf_pa][skf_pb] += 2
+                    eval_k[skf_pa] += 2
+                    turn_eval += 2
+
+                    # Calculate the maximum improvement percetage
+                    Delta1 = (pa.fcost - oa.fcost) / (pa.fcost ** 2 + 1e-50)
+                    Delta2 = (pa.fcost - ob.fcost) / (pa.fcost ** 2 + 1e-50)
+
+                    Delta[skf_pa][skf_pb] += max([Delta1, 0])**2
+                    Delta[skf_pa][skf_pb] += max([Delta2, 0])**2 
+
+                    if oa.fcost < pa.fcost: 
+                        population[skf_pa][idx_ind].genes = oa.genes 
+                        population[skf_pa][idx_ind].fcost = oa.fcost 
+                    
+                    if ob.fcost < population[skf_pa][idx_ind].fcost: 
+                        population[skf_pa][idx_ind].genes = ob.genes 
+                        population[skf_pa][idx_ind].fcost = ob.fcost 
+
+
+
+            # merge
+            population = offsprings
+            population.update_rank()
+
+            if count_loop % 50 == 0: 
+                # if (epoch - before_epoch) > kwargs['step_over']: 
+                for skf in range(len(self.tasks)): 
+                    
+                    ls = Search.LocalSearch_DSCG()
+                    ls.getInforTasks(self.IndClass, self.tasks, seed= self.seed)
+                    
+                    ind = population[skf].getSolveInd()
+                    evals, new_ind = ls.search(ind, fes = 2000)
+                    eval_k[skf] += evals
+                    if new_ind.fcost < ind.fcost : 
+                        idx = int(np.where(population[skf].factorial_rank == 1)[0])
+                        population[skf].ls_inds[idx].genes = new_ind.genes 
+                        population[skf].ls_inds[idx].fcost = new_ind.fcost 
+                        # population[skf].ls_inds[0].genes= new_ind.genes 
+                        # population[skf].ls_inds[0].fcost = new_ind.fcost
+                        population.update_rank()  
 
             # selection
             nb_inds_tasks = [int(
@@ -314,7 +353,9 @@ class model(AbstractModel.model):
             # update operators
             self.crossover.update(population = population)
             self.mutation.update(population = population)
-            self.search.update()
+            self.dimension_strategy.update(population = population)
+            self.search.update(population) 
+
 
             # update smp
             for skf in range(len(self.tasks)):
