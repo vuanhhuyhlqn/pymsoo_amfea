@@ -9,7 +9,7 @@ import matplotlib
 
 class CompareModel():
     # TODO so sánh
-    def __init__(self, models: List[AbstractModel.model], label: List[str] = None) -> None:
+    def __init__(self, models: List[AbstractModel.model] = [], label: List[str] = None) -> None:
         self.models = models
         if label is None:
             label = [m.name for m in self.models]
