@@ -101,8 +101,8 @@ def render_smp_das():
     model = SM_MFEA.model() 
     model.tasks = CEC17_benchmark.get_10tasks_benchmark()[0]
 
-    # model = loadModel("/home/anhdt-minhdt/Code/docker/pyMSOO/Data/convergence_trend_das/S-MFEA_KL_CEC17_PYTHON",ls_tasks= CEC17_benchmark.get_10tasks_benchmark()[0], set_attribute= True)
-    model.history_smp = np.load("/home/anhdt-minhdt/Data/CEC17/Compare_conver_trend/SMP_contain_history_smp/smp_kl.npy")
+    # model = loadModel("./Data/convergence_trend_das/S-MFEA_KL_CEC17_PYTHON",ls_tasks= CEC17_benchmark.get_10tasks_benchmark()[0], set_attribute= True)
+    model.history_smp = np.load("./Data/CEC17/Compare_conver_trend/SMP_contain_history_smp/smp_kl.npy")
     return model.render_smp(shape=(2,5), title= "", grid= False, label_loc= "lower center",
         title_size= 20,
         label_size_x= 20,
@@ -120,8 +120,8 @@ def render_smp_sbx():
     model = SM_MFEA.model() 
     model.tasks = CEC17_benchmark.get_10tasks_benchmark()[0]
 
-    # model = loadModel("/home/anhdt-minhdt/Code/docker/pyMSOO/Data/convergence_trend_das/S-MFEA_KL_CEC17_PYTHON",ls_tasks= CEC17_benchmark.get_10tasks_benchmark()[0], set_attribute= True)
-    model.history_smp = np.load("/home/anhdt-minhdt/Data/CEC17/Compare_conver_trend/SMP_contain_history_smp/smp_no_kl.npy")
+    # model = loadModel("./Data/convergence_trend_das/S-MFEA_KL_CEC17_PYTHON",ls_tasks= CEC17_benchmark.get_10tasks_benchmark()[0], set_attribute= True)
+    model.history_smp = np.load("./Data/CEC17/Compare_conver_trend/SMP_contain_history_smp/smp_no_kl.npy")
     return model.render_smp(shape=(2,5), title= "", grid= False, label_loc= "lower center",
         title_size= 20,
         label_size_x= 20,
