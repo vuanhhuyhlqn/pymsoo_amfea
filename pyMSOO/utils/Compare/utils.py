@@ -3,7 +3,8 @@ from ..LoadSaveModel.load_utils import loadModel
 
 from pyMSOO.MFEA.benchmark.continous.CEC17 import CEC17_benchmark 
 from pyMSOO.MFEA.benchmark.continous.WCCI22 import WCCI22_benchmark
-
+from pyMSOO.MFEA.model import SM_MFEA
+import numpy as np 
 
 def render_cec_17_das_vs_wo_das(ls_model, ls_label, shape = (2, 5), min_cost= 1e-6, label_shape = None):
     '''Compare between S-MFEA with other MODEL'''
@@ -96,5 +97,40 @@ def render_cec_17_SM_MFEA_vs_other(ls_model, ls_label, shape = (2, 5), min_cost=
     )
 
 
+def render_smp_das():
+    model = SM_MFEA.model() 
+    model.tasks = CEC17_benchmark.get_10tasks_benchmark()[0]
 
+    # model = loadModel("/home/anhdt-minhdt/Code/docker/pyMSOO/Data/convergence_trend_das/S-MFEA_KL_CEC17_PYTHON",ls_tasks= CEC17_benchmark.get_10tasks_benchmark()[0], set_attribute= True)
+    model.history_smp = np.load("/home/anhdt-minhdt/Data/CEC17/Compare_conver_trend/SMP_contain_history_smp/smp_kl.npy")
+    return model.render_smp(shape=(2,5), title= "", grid= False, label_loc= "lower center",
+        title_size= 20,
+        label_size_x= 20,
+        label_size_y= 20,
+        x_tick_size= 20,
+        y_tick_size= 20,
+        handletextpad= 1,
+        # borderaxespad=0.8,
+        bbox_to_anchor=(0.5,-0.06),
+        legend_size= 21,
+        ncol = 11, 
+    )
 
+def render_smp_sbx():
+    model = SM_MFEA.model() 
+    model.tasks = CEC17_benchmark.get_10tasks_benchmark()[0]
+
+    # model = loadModel("/home/anhdt-minhdt/Code/docker/pyMSOO/Data/convergence_trend_das/S-MFEA_KL_CEC17_PYTHON",ls_tasks= CEC17_benchmark.get_10tasks_benchmark()[0], set_attribute= True)
+    model.history_smp = np.load("/home/anhdt-minhdt/Data/CEC17/Compare_conver_trend/SMP_contain_history_smp/smp_no_kl.npy")
+    return model.render_smp(shape=(2,5), title= "", grid= False, label_loc= "lower center",
+        title_size= 20,
+        label_size_x= 20,
+        label_size_y= 20,
+        x_tick_size= 20,
+        y_tick_size= 20,
+        handletextpad= 1,
+        # borderaxespad=0.8,
+        bbox_to_anchor=(0.5,-0.06),
+        legend_size= 21,
+        ncol = 11, 
+    )
