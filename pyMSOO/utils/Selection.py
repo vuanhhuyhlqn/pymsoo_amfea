@@ -19,7 +19,8 @@ class ElitismSelection(AbstractSelection):
     def __init__(self, random_percent = 0, *args, **kwds) -> None:
         super().__init__(*args, **kwds)
         assert 0<= random_percent and random_percent <= 1
-        self.random_percent = random_percent        
+        self.random_percent = random_percent    
+        print("random percent: {0}".format(self.random_percent))    
         
     def __call__(self, population:Population, nb_inds_tasks: list, *args, **kwds) -> List[int]:
         ls_idx_selected = []
@@ -33,7 +34,7 @@ class ElitismSelection(AbstractSelection):
             #random
             remain_idx = np.where(subpop.scalar_fitness < 1/N_elitism)[0].tolist()
             idx_random = np.random.choice(remain_idx, size= (N_i - N_elitism, )).tolist()
-
+            # print(len(idx_random))
             idx_selected_inds += idx_random
 
             subpop.select(idx_selected_inds)

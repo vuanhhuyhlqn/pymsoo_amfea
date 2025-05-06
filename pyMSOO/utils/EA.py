@@ -297,6 +297,7 @@ class Population:
                 IndClass(genes= None, dim= self.dim_uss)
                 for i in range(np.sum(nb_inds_tasks))
             ]
+
             # matrix factorial cost and matrix rank
             matrix_cost = np.array([[ind.eval(t) for ind in ls_inds] for t in list_tasks]).T
             matrix_rank_pop = np.argsort(np.argsort(matrix_cost, axis = 0), axis = 0) 
@@ -374,7 +375,6 @@ class Population:
             return [self.ls_subPop[idx_task].ls_inds[idx] for idx in idx_inds[numba_randomchoice(len(idx_inds), size = size, replace= replace)].tolist()]
         else:
             raise ValueError('`type` ==  random | tournament | ontop, not equal ' + type)
-        
 
     def __getRandomInds__(self, size: int = None, replace: bool = False):
         if size == None:

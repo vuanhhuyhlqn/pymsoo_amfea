@@ -1,0 +1,15 @@
+I'm using MFEA algorithm to optimize a number of different tasks. Help me generate a Python function named 'get_rmp_matrix' for crossover process that takes exactly 3 inputs: task_count, pop_mean, pop_variance, fit_mean, fit_var where:
+- 'task_count': The number of tasks.
+- 'pop_mean': A matrix of shape (task_count, indi_len), where each row represents the mean vector of the population for each task. It describes the average position of individuals in the search space per task.
+- 'pop_variance': A matrix of shape (task_count, indi_len), where each row represents the per-dimension variance of individuals in the population of each task. It describes the spread or diversity within each task.
+The function must return a 2D NumPy matrix with shape (task_count, task_count) where:
+- RMP[i][i] = 1.0 for all i.
+- RMP[i][j] = RMP[j][i] for all i, j (symmetric matrix).
+- RMP[i][j] is in [0, 1] for all i, j, and automatically lies within this range without using the clip() function or any similar limiting methods.
+The values in the RMP matrix indicate the likelihood of crossover between tasks:
+Examples:
+- RMP[i][j] = 0 means task i and task j will never crossover.
+- RMP[i][j] = 1 means task i and task j will always crossover when possible.
+The function must implement the following strategy: 
+{0}
+Output only valid Python code for the function, without any comments, explanations, or extra text. Do not modify the input parameters. Try to optimize using NumPy. The function must use only NumPy library.

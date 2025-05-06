@@ -23,7 +23,6 @@ class SBX_Crossover(AbstractCrossover):
         #like pb
         gene_ob = np.clip(0.5*((1 - beta) * gene_pa + (1 + beta) * gene_pb), 0, 1)
 
-        #swap
         if swap:
             idx_swap = np.where(np.random.rand(dim_uss) < 0.5)[0]
             gene_oa[idx_swap], gene_ob[idx_swap] = gene_ob[idx_swap], gene_oa[idx_swap]

@@ -1,0 +1,12 @@
+I am using the MFEA algorithm to optimize several different tasks. Help me generate 4 different guide lines to construct a Random Mating Probability (RMP) matrix using the following information:
+You are given the following input information:
+- 'task_count': The number of tasks.
+- 'pop_mean': A matrix of shape (task_count, indi_len), where each row represents the mean vector of the population for each task. It describes the average position of individuals in the search space per task.
+- 'pop_variance': A matrix of shape (task_count, indi_len), where each row represents the per-dimension variance of individuals in the population of each task. It describes the spread or diversity within each task.
+Each guide line should:
+- Use these statistics to assess **the similarity or difference between tasks** in terms of distribution in the search space.
+- Propose how RMP values between task pairs should be adjusted accordingly.
+- Be logically sound, non-trivial, and varied in perspective or criteria.
+- Avoid overly simple rules or generic statements.
+Output must be a valid JSON object in the following format: {{ "strategy": [ "guide line 1", "guide line 2", "guide line 3", "guide line 4" ] }}.
+Do not number the guide lines. Follow the format and do not give any further explain.
