@@ -10,8 +10,7 @@ class model(AbstractModel.model):
         IndClass: Type[Individual],
         tasks: List[AbstractTask], 
         crossover: Crossover.SBX_Crossover,
-        mutation: Mutation.PolynomialMutation,
-        rmp: Rmp.AdaptiveRMP,
+        mutation: Mutation.PolynomialMutation,  
         selection: Selection.ElitismSelection, 
         *args, **kwargs):
         super().compile(
@@ -21,7 +20,8 @@ class model(AbstractModel.model):
             selection= selection,
             *args, **kwargs
         )
-        self.rmp = rmp
+        self.rmp = Rmp.AdaptiveRMP(5, 5, 0.8, 0.1, crossover, mutation)
+
     
     def get_pop_distribution(self, population: Population):
         mean = np.zeros((population.nb_tasks, population.dim_uss))

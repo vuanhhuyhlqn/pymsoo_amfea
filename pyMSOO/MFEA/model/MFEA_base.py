@@ -73,7 +73,7 @@ class model(AbstractModel.model):
                 
                 offsprings.__addIndividual__(oa)
                 offsprings.__addIndividual__(ob)
-            print("len off : {0}".format(len(offsprings)))
+            # print("len off : {0}".format(len(offsprings)))
             # merge and update rank
             population = population + offsprings
             population.update_rank()

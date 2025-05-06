@@ -20,6 +20,8 @@ mutation_text = mutation_file.read()
 reverse_file = open(path + "/matrix_prompts/reverse.txt", "r")
 reverse_text = reverse_file.read()
 
+print(init_text)
+
 def split_prompts(response_content):
     try:
         data = json.loads(response_content)
