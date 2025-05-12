@@ -2,7 +2,7 @@ import numpy as np
 from ....utils.EA import AbstractTask, Individual
 from numba import jit, njit
 from numba.typed import Dict, List
-
+from ...benchmark.continous.GNBG_instances import get_gnbg
 
 class AbstractFunc(AbstractTask):
     limited_space = False
@@ -297,3 +297,38 @@ class Rastrigin(AbstractFunc):
         x = self.__class__.decode(
             x, self.dim, self.limited_space, self.bound, self.rotation_matrix, self.shift)
         return __class__._func(x, self.dim)
+    
+class GNBGFunc(AbstractFunc):
+    def __init__(self, problem_index, shift: list = None, rotation_matrix: np.ndarray = None, bound: tuple = None):
+        self.gnbg = get_gnbg(problem_index)
+        
+        dim = self.gnbg.Dimension
+        if bound is None:
+            bound = (self.gnbg.MinCoordinate, self.gnbg.MaxCoordinate)
+        
+        self.global_optimal = self.gnbg.OptimumPosition.flatten()
+        
+        if shift is None:
+            shift = np.zeros(dim)
+        
+        rotation_matrix = np.identity(dim)
+        
+        super().__init__(dim, shift, rotation_matrix, bound)
+        
+        if self.limited_space:
+            self.global_optimal = (self.global_optimal - self.bound[0]) / (self.bound[1] - self.bound[0])
+        else:
+            self.global_optimal = self.global_optimal
+        
+        self.name = f"GNBG_f{problem_index}: [{self.bound[0]}, {self.bound[1]}]^{dim}"
+
+    def __call__(self, x):
+        x = self.__class__._convert(x)
+        x_decoded = self.__class__.decode(
+            x, self.dim, self.limited_space, self.bound, self.rotation_matrix, self.shift)
+        return self.gnbg.fitness(x_decoded)[0] 
+
+    @staticmethod
+    @jit(nopython=True)
+    def _func(x):
+        return 0.0
