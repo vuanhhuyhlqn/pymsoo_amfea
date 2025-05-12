@@ -1,4 +1,4 @@
-I am using MFEA algorithm to optimize some different tasks. From the strategy below, help me generate an reversed strategy that has 5 guide lines to create a RMP (Random Mating Probability) matrix using the following information:
+I am using MFEA algorithm to optimize some different tasks. From the strategy below, help me generate an reversed strategy that has 4 guide lines to create a RMP (Random Mating Probability) matrix using the following information:
 - 'task_count': The number of tasks.
 - 'pop_mean': A matrix of shape (task_count, indi_len), where each row represents the mean vector of the population for each task. It describes the average position of individuals in the search space per task.
 - 'pop_variance': A matrix of shape (task_count, indi_len), where each row represents the per-dimension variance of individuals in the population of each task. It describes the spread or diversity within each task.
