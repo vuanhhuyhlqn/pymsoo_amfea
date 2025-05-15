@@ -25,10 +25,42 @@ class GNBG_benchmark:
             )
         return tasks, Individual_func
 
+    def get_multitask_benchmark(ID: int)-> Tuple[List[AbstractFunc], Type[Individual_func]]:
+        tasks = []
+        if ID == 1:
+            for problem_index in range(1, 7):
+                tasks.append(
+                    GNBGFunc(
+                        problem_index=problem_index,
+                        bound=None, 
+                        shift=None,  
+                        rotation_matrix=None 
+                    )
+                )
+        if ID == 2:
+            for problem_index in range(7, 16):
+                tasks.append(
+                    GNBGFunc(
+                        problem_index=problem_index,
+                        bound=None, 
+                        shift=None,  
+                        rotation_matrix=None 
+                    )
+                )        
+        if ID == 3:
+            for problem_index in range(16, 25):
+                tasks.append(
+                    GNBGFunc(
+                        problem_index=problem_index,
+                        bound=None, 
+                        shift=None,  
+                        rotation_matrix=None 
+                    )
+                )     
+        return tasks, Individual_func
     @staticmethod
     def GNBG_get_tasks_benchmark(ID: int) -> Tuple[List[AbstractFunc], Type[Individual_func]]:
         tasks = []
-        
         task_pairs = [
             (1, 2),   
             (3, 4),  

@@ -143,7 +143,7 @@ class model():
             desc = str("")
             for value in range(len(list_value[i])):
                 if print_format_e: 
-                    desc = desc + str("%.2E " % (list_value[i][value])) + " "
+                    desc = desc + str("%.5E " % (list_value[i][value])) + " "
                 else: 
                     desc = desc + str(list_value[i][value]) + " "
             line = '{}: {},  '.format(list_desc[i], desc)
@@ -178,7 +178,7 @@ class model():
         for i in range(len(list_desc)):
             desc = str("")
             for value in range(len(list_value[i])):
-                desc = desc + str("%.2E " % (list_value[i][value])) + " "
+                desc = desc + str("%.5E " % (list_value[i][value])) + " "
             line = '{}: {}'.format(list_desc[i], desc)
             print(ERASE_LINE+ line)
         

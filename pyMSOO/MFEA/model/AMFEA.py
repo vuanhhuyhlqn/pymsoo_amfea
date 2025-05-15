@@ -89,7 +89,7 @@ class model(AbstractModel.model):
             )
 
             # create offspring pop
-            while len(offsprings) < len(population):
+            while len(offsprings) < int(len(population) * 1.5):
                 # choose parent 
                 pa, pb = population.__getRandomInds__(2)
                 # print("{0} {1}".format(pa.skill_factor, pb.skill_factor))
